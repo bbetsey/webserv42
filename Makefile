@@ -1,9 +1,9 @@
 NAME	=	webserv
 
-SRCS	=	srcs/Parser/main.cpp \
+SRCS	=	srcs/main.cpp \
 			srcs/Parser/Request.cpp \
 			srcs/Parser/Response.cpp \
-			srcs/Utils/Split.cpp \
+			srcs/Utils/Utils.cpp \
 
 FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror -fsanitize=address
 OBJS	= 	$(SRCS:cpp=o)

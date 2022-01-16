@@ -39,6 +39,12 @@ void Request::parseHeaders(std::vector<std::string> &lines)
     }
 }
 
+std::string Request::response(void) { return Response(*this).toStr(); }
+const std::string Request::getMethod(void) const { return this->_method; }
+const std::string Request::getUri(void) const { return this->_uri; }
+const std::string Request::getBody(void) const { return this->_body; }
+const std::map<std::string, std::string> Request::getHeaders(void) const { return this->_headers; }
+
 std::string Request::debug(void)
 {
     std::string ret("Request debug: \r\n");
@@ -50,24 +56,3 @@ std::string Request::debug(void)
 
     return ret;
 }
-
-std::string Request::getMethod(void) const
-{
-    
-}
-
-std::string Request::postMethod(void) const
-{
-
-}
-
-std::string Request::deleteMethod(void) const
-{
-
-}
-
-std::string Request::errMethod(void) const
-{
-
-}
-

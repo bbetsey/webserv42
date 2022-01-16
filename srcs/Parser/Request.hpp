@@ -1,11 +1,10 @@
 #pragma once
 
 #include "../Utils/Utils.hpp"
+#include "Response.hpp"
 #include <iostream>
 #include <map>
 #include <string>
-
-#define CRLF "\r\n"
 
 class Request
 {
@@ -14,19 +13,12 @@ class Request
         ~Request(void);
 
         std::string debug(void);
+        std::string response(void);
 
-        std::string response(void)
-        {
-            if (this->_method == "GET")
-                return this->getMethod();
-            else if (this->_method == "POST")
-                return this->postMethod();
-            else if (this->_method == "DELETE")
-                return this->deleteMethod();
-            else
-                return this->errMethod();
-        }
-
+        const std::string getMethod(void) const;
+        const std::string getUri(void) const;
+        const std::string getBody(void) const;
+        const std::map<std::string, std::string> getHeaders(void) const;
     private:
         std::string _method;
         std::string _uri;
@@ -36,9 +28,4 @@ class Request
 
         void parseFirstLine(std::string &str);
         void parseHeaders(std::vector<std::string> &lines);
-
-        std::string getMethod(void) const;
-        std::string postMethod(void) const;
-        std::string deleteMethod(void) const;
-        std::string errMethod(void) const;
 };
