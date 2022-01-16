@@ -51,8 +51,23 @@ std::string Request::debug(void)
     return ret;
 }
 
-std::ostream& operator<<(std::ostream &os, Request &req)
+std::string Request::getMethod(void) const
 {
-    os << req.debug();
-    return os;
+    
 }
+
+std::string Request::postMethod(void) const
+{
+
+}
+
+std::string Request::deleteMethod(void) const
+{
+
+}
+
+std::string Request::errMethod(void) const
+{
+
+}
+
