@@ -23,13 +23,14 @@ void Response::getMethod(void)
             this->_code = 404;
         else
             this->_code = 403;
+        return;
     }
 
     while (std::getline(file, tmp))
         this->_body += tmp;
 
     this->_headers["Content-Length"] = itos(this->_body.length());
-    this->_headers["Content-Type"] = "text/html";
+    this->_headers["Content-Type"] = getMimeType(path.substr(path.find_last_of('.') + 1, path.length()));
     file.close();
     this->_code = 200;
 }

@@ -13,5 +13,4 @@ std::string getDate(void);
 void setMimeTypes(void);
 std::string itos(int n);
 long getFileSize(std::string filename);
-
-static std::map<std::string, std::string> mimeTypes;
+std::string getMimeType(std::string ext);
