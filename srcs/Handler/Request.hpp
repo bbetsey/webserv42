@@ -1,7 +1,9 @@
 #pragma once
 
 #include "../Utils/Utils.hpp"
+#include "../Utils/Uri.hpp"
 #include "Response.hpp"
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -15,7 +17,7 @@ class Request
         std::string response(void);
 
         const std::string getMethod(void) const;
-        const std::string getUri(void) const;
+        std::string getUri(void) const;
         const std::string getBody(void) const;
         const std::map<std::string, std::string> getHeaders(void) const;
     private:

@@ -13,7 +13,7 @@ Response::Response(const Request &req) : _req(req)
 
 void Response::getMethod(void)
 {
-    std::string path = this->_req.getUri();
+    std::string path = Uri(this->_req.getUri())._path;
     if (path == "/")
         path = "index.html";
     std::string tmp;

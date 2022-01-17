@@ -4,6 +4,7 @@ SRCS	=	srcs/main.cpp \
 			srcs/Handler/Request.cpp \
 			srcs/Handler/Response.cpp \
 			srcs/Utils/Utils.cpp \
+			srcs/Utils/Uri.cpp \
 
 FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror -fsanitize=address
 OBJS	= 	$(SRCS:cpp=o)

@@ -41,6 +41,6 @@ void Request::parseHeaders(std::vector<std::string> &lines)
 
 std::string Request::response(void) { return Response(*this).toStr(); }
 const std::string Request::getMethod(void) const { return this->_method; }
-const std::string Request::getUri(void) const { return this->_uri; }
+std::string Request::getUri(void) const { return this->_uri; }
 const std::string Request::getBody(void) const { return this->_body; }
 const std::map<std::string, std::string> Request::getHeaders(void) const { return this->_headers; }
