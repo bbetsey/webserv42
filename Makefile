@@ -1,8 +1,8 @@
 NAME	=	webserv
 
 SRCS	=	srcs/main.cpp \
-			srcs/Parser/Request.cpp \
-			srcs/Parser/Response.cpp \
+			srcs/Handler/Request.cpp \
+			srcs/Handler/Response.cpp \
 			srcs/Utils/Utils.cpp \
 
 FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror -fsanitize=address
