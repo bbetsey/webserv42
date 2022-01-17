@@ -44,15 +44,3 @@ const std::string Request::getMethod(void) const { return this->_method; }
 const std::string Request::getUri(void) const { return this->_uri; }
 const std::string Request::getBody(void) const { return this->_body; }
 const std::map<std::string, std::string> Request::getHeaders(void) const { return this->_headers; }
-
-std::string Request::debug(void)
-{
-    std::string ret("Request debug: \r\n");
-
-    ret += "FIRST " + this->_method + " " + this->_uri + " " + this->_httpVersion + "\r\n" + "HEADERS:\r\n";
-    std::map<std::string, std::string>::iterator it;
-    for (it = this->_headers.begin(); it != this->_headers.end(); it++)
-        ret += "[" + it->first + "]: [" + it->second + "] \r\n";
-
-    return ret;
-}

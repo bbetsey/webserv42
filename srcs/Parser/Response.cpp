@@ -31,6 +31,7 @@ void Response::getMethod(void)
 
     this->_headers["Content-Length"] = itos(this->_body.length());
     this->_headers["Content-Type"] = getMimeType(path.substr(path.find_last_of('.') + 1, path.length()));
+    this->_headers["Last-Modified"] = getLastModified(path);
     file.close();
     this->_code = 200;
 }

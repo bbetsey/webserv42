@@ -113,6 +113,21 @@ long getFileSize(std::string filename)
     return rc == 0 ? stat_buf.st_size : -1;
 }
 
+std::string getLastModified(std::string path)
+{
+	char			buffer[100];
+	struct stat		stats;
+	struct tm		*tm;
+
+	if (stat(path.c_str(), &stats) == 0)
+	{
+		tm = gmtime(&stats.st_mtime);
+		strftime(buffer, 100, "%a, %d %b %Y %H:%M:%S GMT", tm);
+		return std::string(buffer);
+	}
+    return std::string();
+}
+
 std::string getMimeType(std::string ext)
 {
     if (ext == "html")

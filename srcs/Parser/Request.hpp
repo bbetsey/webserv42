@@ -12,7 +12,6 @@ class Request
         Request(std::string &str);
         ~Request(void);
 
-        std::string debug(void);
         std::string response(void);
 
         const std::string getMethod(void) const;
