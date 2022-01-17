@@ -14,6 +14,8 @@ Response::Response(const Request &req) : _req(req)
 void Response::getMethod(void)
 {
     std::string path = this->_req.getUri();
+    if (path == "/")
+        path = "index.html";
     std::string tmp;
     std::ifstream file(path.c_str());
 
