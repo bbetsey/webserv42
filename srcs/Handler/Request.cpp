@@ -32,15 +32,27 @@ void Request::parseFirstLine(std::string &line)
 
 void Request::parseHeaders(std::vector<std::string> &lines)
 {
-    for (size_t i = 1; i < lines.size(); i++)
+    size_t i;
+    for (i = 1; i < lines.size(); i++)
     {
+        if (lines[i] == CRLF)
+            break;
         size_t pos = lines[i].find_first_of(':');
         this->_headers[lines[i].substr(0, pos)] = lines[i].substr(pos + 2, lines[i].length());
     }
+    this->parseBody(lines, i);
+}
+
+void Request::parseBody(std::vector<std::string> &lines, size_t &i)
+{
+    if (lines.size() <= i + 1)
+        return;
+    for (i = i + 1; i < lines.size(); i++)
+        this->_body += lines[i];
 }
 
 std::string Request::response(void) { return Response(*this).toStr(); }
-const std::string Request::getMethod(void) const { return this->_method; }
+const std::string &Request::getMethod(void) const { return this->_method; }
 std::string Request::getUri(void) const { return this->_uri; }
-const std::string Request::getBody(void) const { return this->_body; }
-const std::map<std::string, std::string> Request::getHeaders(void) const { return this->_headers; }
+const std::string &Request::getBody(void) const { return this->_body; }
+const std::map<std::string, std::string> &Request::getHeaders(void) const { return this->_headers; }
