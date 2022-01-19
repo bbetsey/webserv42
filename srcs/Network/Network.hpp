@@ -3,6 +3,8 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/event.h>
 #include <netdb.h>
 #include <iostream>
 #include <vector>
@@ -55,7 +57,7 @@ class Network {
 
 	private:
 
-		t_conf	conf;
+		t_conf	_conf;
 	
 	public:
 
