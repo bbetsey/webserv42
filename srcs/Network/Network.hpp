@@ -8,6 +8,9 @@
 #include <netdb.h>
 #include <iostream>
 #include <vector>
+#include <unistd.h>
+
+#include "Socket.hpp"
 
 
 enum Method {
@@ -58,7 +61,13 @@ class Network {
 	private:
 
 		t_conf	_conf;
+
+
+		// MARK: - Private Methods
+
+		void	watch_loop( int kq, struct kevent *kset, int len );
 	
+
 	public:
 
 		// MARK: - Class Constructor
@@ -73,7 +82,7 @@ class Network {
 
 		// MARK: - Class Methods
 
-		int	start( void );
+		void	start( void );
 
 
 		// MARK: - Getters
