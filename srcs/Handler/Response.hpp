@@ -24,5 +24,6 @@ class Response
         std::string _body;
 
         void getMethod(void);
+        void postMethod(void);
         void errMethod(void);
 };

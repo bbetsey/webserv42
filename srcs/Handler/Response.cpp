@@ -2,8 +2,10 @@
 
 Response::Response(const Request &req) : _req(req)
 {
-    if (req.getMethod() == "GET")
+    if (req.getMethod() == "GET" || req.getMethod() == "HEAD")
         this->getMethod();
+    else if (req.getMethod() == "POST")
+        this->postMethod();
     else
         this->errMethod();
 
@@ -11,9 +13,24 @@ Response::Response(const Request &req) : _req(req)
     this->_headers["Server"] = "webserv42";
 }
 
+void Response::postMethod(void)
+{
+    std::string path = Uri(this->_req.getUri())._path;
+
+    std::ofstream file(path.c_str());
+    if (!file.is_open())
+    {
+        this->_code = 403;
+        return;
+    }
+    file << this->_req.getBody();
+    file.close();
+    this->_code = 200;
+}
+
 void Response::getMethod(void)
 {
-    std::string path = this->_req.getUri();
+    std::string path = Uri(this->_req.getUri())._path;
     if (path == "/")
         path = "index.html";
     std::string tmp;

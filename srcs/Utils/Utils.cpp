@@ -15,7 +15,7 @@ void split(const std::string& str, std::vector<std::string>& tokens, const std::
 	}
 }
 
-std::string codePhrase(const int &code)
+std::string codePhrase(const int code)
 {
     switch (code)
     {
