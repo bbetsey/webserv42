@@ -16,4 +16,5 @@ class Cgi
         const Uri &_uri;
         const std::string &_body;
         std::map<std::string, std::string> &_headers;
+        const ServerConfig &_cfg;
 };

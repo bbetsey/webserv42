@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request(std::string &str)
+Request::Request(std::string &str, const ServerConfig &cfg) : _cfg(cfg)
 {
     std::vector<std::string> lines;
     split(str, lines, "\r\n");
@@ -56,3 +56,4 @@ const std::string &Request::getMethod(void) const { return this->_method; }
 const Uri &Request::getUri(void) const { return this->_uri; }
 const std::string &Request::getBody(void) const { return this->_body; }
 std::map<std::string, std::string> &Request::getHeaders(void) { return this->_headers; }
+const ServerConfig &Request::getConfig(void) const {return this->_cfg; };

@@ -1,8 +1,8 @@
-#include "Handler/Response.hpp"
+#include "Network/Network.hpp"
+#include "Config/Config.hpp"
+#include "Handler/Request.hpp"
 
 int main(int argc, char **argv)
 {
-    std::string req = (argc == 2) ? argv[1] : "GET / HTTP/1.1";
-
-    std::cout << Request(req).response();
+    Config cfg;
 }
