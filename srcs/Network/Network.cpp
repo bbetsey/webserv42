@@ -3,7 +3,7 @@
 
 // MARK: - Class Constructor
 
-Network::Network( t_conf conf ) : _conf( conf ) {}
+Network::Network( const Config &conf ) : _conf( conf ) {}
 
 
 // MARK: - Class Distructor
@@ -110,19 +110,19 @@ void	Network::send_msg( struct kevent &event ) {
 
 void	Network::start( void ) {
 	int 			kq;
-	struct kevent	kset[ _conf.servers.size() ];
+	struct kevent	kset[ _conf._servers.size() ];
 
 	kq = kqueue();
 
-	std::vector< s_server >::iterator	it = _conf.servers.begin();
-	for ( int i = 0; it != _conf.servers.end(); ++it, ++i ) {
-		Socket	socket = Socket( it->host, it->port );
+	std::vector< ServerConfig >::iterator	it = _conf._servers.begin();
+	for ( int i = 0; it != _conf._servers.end(); ++it, ++i ) {
+		Socket	socket = Socket( it->_host, it->_port );
 		if ( socket.start() ) {
 			EV_SET( kset + i, socket.get_sock_fd(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL );
 		}
 	}
-	if ( kevent( kq, kset, _conf.servers.size(), NULL, 0, NULL ) == -1 )
+	if ( kevent( kq, kset, _conf._servers.size(), NULL, 0, NULL ) == -1 )
 		std::cout << "Network: kevent error" << std::endl;
 
-	watch_loop( kq, kset, _conf.servers.size() );
+	watch_loop( kq, kset, _conf._servers.size() );
 }

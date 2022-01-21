@@ -12,14 +12,9 @@
 
 
 int	main( void ) {
-	t_server	server;
-	t_conf		conf;
+	Config conf;
 
-	server.host = HOST;
-	server.port = PORT;
-	server.name = HOST;
-	conf.servers.push_back( server );
-
+	std::cout << conf._servers[0]._port << std::endl;
 	Network	network( conf );
 	network.start();
 }
