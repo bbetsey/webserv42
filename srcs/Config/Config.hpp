@@ -28,6 +28,7 @@ class ServerConfig
 
 		Location getLocation(const std::string &path) const
 		{
+			( void )path;
 			return this->_locations[0];
 		}
 };
@@ -42,14 +43,14 @@ class Config
 			this->_root = "/";
 			
 			ServerConfig srvCfg;
-			srvCfg._host = "127.0.0.1";
+			srvCfg._host = "localhost";
 			srvCfg._port = "3490";
 			srvCfg._name = "webserv";
 			
 			Location loc;
 			loc._path = "/";
 			loc._root = "/";
-			loc._methods = {"GET", "POST", "DELETE"};
+			loc._methods.push_back( "GET" );
 			loc._max_body_size = 8192;
 			loc._index = "index.html";
 			loc._cgi_path = "ubuntu_cgi_tester";
@@ -59,10 +60,11 @@ class Config
 
 			srvCfg._locations.push_back(loc);
 			this->_servers.push_back(srvCfg);
+
+			_servers.push_back( srvCfg );
 		}
 
         std::vector<ServerConfig>	_servers;
-		std::vector<ServerConfig>	_serversConfigs;
         std::string					_error_page;
         std::string					_root;
 };
