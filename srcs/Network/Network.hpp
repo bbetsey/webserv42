@@ -9,8 +9,12 @@
 #include <iostream>
 #include <vector>
 #include <unistd.h>
+#include <iostream>
+#include <sstream>
 
 #include "Socket.hpp"
+
+# define BUFFER_READ 4096
 
 
 enum Method {
@@ -22,18 +26,18 @@ enum Method {
 
 typedef struct s_location {
 
-	std::string					uri;
-	std::string					root;
-	std::string					index;
-	std::string					cgi_path;
-	std::string					cgi_ext;
-	std::string					alias;
-	std::vector< Method >		methods;
-	int							autoindex;
-	int							max_body_size;
-	std::vector< t_location >	locations;
+	std::string							uri;
+	std::string							root;
+	std::string							index;
+	std::string							cgi_path;
+	std::string							cgi_ext;
+	std::string							alias;
+	std::vector< Method >				methods;
+	int									autoindex;
+	int									max_body_size;
+	std::vector< struct s_location >	locations;
 
-}								t_location;
+}										t_location;
 
 
 typedef struct s_server {
@@ -56,6 +60,14 @@ typedef struct s_conf {
 }								t_conf;
 
 
+typedef struct s_udata {
+
+	int		is_send;
+	int		listen_socket;
+	int		msg_size;
+
+}			t_udata;
+
 class Network {
 
 	private:
@@ -66,6 +78,9 @@ class Network {
 		// MARK: - Private Methods
 
 		void	watch_loop( int kq, struct kevent *kset, int len );
+		int		is_listen_socket( struct kevent *kset, int fd, int len );
+		void	recv_msg( struct kevent &event );
+		void	send_msg( struct kevent &event );
 	
 
 	public:
