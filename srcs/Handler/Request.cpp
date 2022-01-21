@@ -21,7 +21,7 @@ void Request::parseFirstLine(std::string &line)
     try
     {
         this->_method = tokens.at(0);
-        this->_uri = tokens.at(1);
+        this->_uri = Uri(tokens.at(1));
         this->_httpVersion = tokens.at(2);
     }
     catch (std::exception &e)
@@ -51,8 +51,8 @@ void Request::parseBody(std::vector<std::string> &lines, size_t &i)
         this->_body += lines[i];
 }
 
-std::string Request::response(void) { return Response(*this).toStr(); }
+std::string Request::response(void) { return ""; }
 const std::string &Request::getMethod(void) const { return this->_method; }
-std::string Request::getUri(void) const { return this->_uri; }
+const Uri &Request::getUri(void) const { return this->_uri; }
 const std::string &Request::getBody(void) const { return this->_body; }
-const std::map<std::string, std::string> &Request::getHeaders(void) const { return this->_headers; }
+std::map<std::string, std::string> &Request::getHeaders(void) { return this->_headers; }

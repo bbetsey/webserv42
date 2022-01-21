@@ -2,11 +2,12 @@
 
 #include "../Utils/Utils.hpp"
 #include "../Utils/Uri.hpp"
-#include "Response.hpp"
 
 #include <iostream>
 #include <map>
 #include <string>
+
+#define CRLF "\r\n"
 
 class Request
 {
@@ -17,12 +18,14 @@ class Request
         std::string response(void);
 
         const std::string &getMethod(void) const;
-        std::string getUri(void) const;
+        const Uri &getUri(void) const;
         const std::string &getBody(void) const;
-        const std::map<std::string, std::string> &getHeaders(void) const;
+        std::map<std::string, std::string> &getHeaders(void);
+
+        
     private:
         std::string _method;
-        std::string _uri;
+        Uri _uri;
         std::string _httpVersion;
         std::string _body;
         std::map<std::string, std::string> _headers;
