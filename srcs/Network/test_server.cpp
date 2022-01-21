@@ -14,7 +14,6 @@
 int	main( void ) {
 	Config conf;
 
-	std::cout << conf._servers[0]._port << std::endl;
 	Network	network( conf );
 	network.start();
 }

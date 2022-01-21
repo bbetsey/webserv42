@@ -96,7 +96,7 @@ void	Network::recv_msg( struct kevent &event ) {
 		buf[ read_bytes ] = '\0';
 		std::cout << buf << std::endl;
 	}
-	std::cout << "\n========== END MSG ==========" << std::endl;
+	std::cout << "\n========== END MSG ==========\n" << std::endl;
 }
 
 void	Network::send_msg( struct kevent &event ) {

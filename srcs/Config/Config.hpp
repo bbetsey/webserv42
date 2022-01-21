@@ -60,8 +60,6 @@ class Config
 
 			srvCfg._locations.push_back(loc);
 			this->_servers.push_back(srvCfg);
-
-			_servers.push_back( srvCfg );
 		}
 
         std::vector<ServerConfig>	_servers;
