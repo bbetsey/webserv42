@@ -2,11 +2,11 @@ NAME	=	webserv
 
 SRCS	=	srcs/main.cpp \
 			srcs/Handler/Request.cpp \
-			srcs/Handler/Response.cpp \
+			srcs/Handler/Cgi.cpp \
 			srcs/Utils/Utils.cpp \
 			srcs/Utils/Uri.cpp \
 
-FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror -fsanitize=address -I/usr/include/kqueue
+FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror -I/usr/include/kqueue
 LDFLAGS =	-lkqueue
 OBJS	= 	$(SRCS:cpp=o)
 

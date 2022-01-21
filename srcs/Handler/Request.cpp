@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request(std::string &str, const ServerConfig &cfg) : _cfg(cfg)
+Request::Request(const std::string &str, const ServerConfig &cfg) : _cfg(cfg)
 {
     std::vector<std::string> lines;
     split(str, lines, "\r\n");
@@ -51,9 +51,9 @@ void Request::parseBody(std::vector<std::string> &lines, size_t &i)
         this->_body += lines[i];
 }
 
-std::string Request::response(void) { return ""; }
+std::string Request::response(void) { return Cgi(*this).execute(); }
 const std::string &Request::getMethod(void) const { return this->_method; }
 const Uri &Request::getUri(void) const { return this->_uri; }
 const std::string &Request::getBody(void) const { return this->_body; }
 std::map<std::string, std::string> &Request::getHeaders(void) { return this->_headers; }
-const ServerConfig &Request::getConfig(void) const {return this->_cfg; };
+const ServerConfig &Request::getConfig(void) const {return this->_cfg; }

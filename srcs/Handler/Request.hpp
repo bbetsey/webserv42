@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Cgi.hpp"
 #include "../Utils/Utils.hpp"
 #include "../Utils/Uri.hpp"
 #include "../Config/Config.hpp"
@@ -13,7 +14,7 @@
 class Request
 {
     public:
-        Request(std::string &str, const ServerConfig &cfg);
+        Request(const std::string &str, const ServerConfig &cfg);
         ~Request(void);
 
         std::string response(void);

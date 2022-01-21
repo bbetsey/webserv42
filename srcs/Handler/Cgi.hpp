@@ -1,11 +1,24 @@
 #pragma once
 
 #include "Request.hpp"
+#include "../Utils/Uri.hpp"
+#include "../Config/Config.hpp"
+
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <map>
+
+#define CGI_BUFSIZE 65536
+
+class Request;
 
 class Cgi
 {
     public:
-        Cgi(Request &req, std::string &cgi_path);
+        Cgi(Request &req);
 
         std::string execute(void);
     private:

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
 class Location
 {
@@ -28,6 +29,7 @@ class ServerConfig
 
 		Location getLocation(const std::string &path) const
 		{
+			(void)path;
 			return this->_locations[0];
 		}
 };
@@ -49,7 +51,7 @@ class Config
 			Location loc;
 			loc._path = "/";
 			loc._root = "/";
-			loc._methods = {"GET", "POST", "DELETE"};
+			loc._methods.push_back("GET"); loc._methods.push_back("POST"); loc._methods.push_back("DELETE");
 			loc._max_body_size = 8192;
 			loc._index = "index.html";
 			loc._cgi_path = "ubuntu_cgi_tester";
