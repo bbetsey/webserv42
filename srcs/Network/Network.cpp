@@ -110,19 +110,19 @@ void	Network::send_msg( struct kevent &event ) {
 
 void	Network::start( void ) {
 	int 			kq;
-	struct kevent	kset[ _conf._servers.size() ];
+	struct kevent	kset[ _conf.servers.size() ];
 
 	kq = kqueue();
 
-	std::vector< ServerConfig >::iterator	it = _conf._servers.begin();
-	for ( int i = 0; it != _conf._servers.end(); ++it, ++i ) {
-		Socket	socket = Socket( it->_host, it->_port );
+	std::vector< ServerConfig >::iterator	it = _conf.servers.begin();
+	for ( int i = 0; it != _conf.servers.end(); ++it, ++i ) {
+		Socket	socket = Socket( it->host, it->port );
 		if ( socket.start() ) {
 			EV_SET( kset + i, socket.get_sock_fd(), EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL );
 		}
 	}
-	if ( kevent( kq, kset, _conf._servers.size(), NULL, 0, NULL ) == -1 )
+	if ( kevent( kq, kset, _conf.servers.size(), NULL, 0, NULL ) == -1 )
 		std::cout << "Network: kevent error" << std::endl;
 
-	watch_loop( kq, kset, _conf._servers.size() );
+	watch_loop( kq, kset, _conf.servers.size() );
 }

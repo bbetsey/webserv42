@@ -12,7 +12,7 @@
 
 
 int	main( void ) {
-	Config conf;
+	Config conf = Config::getTestConfig();
 
 	Network	network( conf );
 	network.start();
