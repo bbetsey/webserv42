@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "Network.hpp"
+#include "../Config/Config.hpp"
 
 #define PORT "3490"
 #define HOST "localhost"
