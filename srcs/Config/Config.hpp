@@ -1,68 +1,62 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
-class Location
-{
-	public:
-		std::string							_path;
-		std::string							_root;
-		std::string							_index;
-		std::string							_cgi_path;
-		std::string							_cgi_ext;
-		std::string							_alias;
-		std::vector<std::string>			_methods;
-		int									_autoindex;
-		int									_max_body_size;
-		std::vector<Location>				_locations;
+#include "Parser.hpp"
+
+
+struct Location {
+
+	std::string					path;
+	std::string					root;
+	std::string					index;
+	std::string					cgi_path;
+	std::string					cgi_ext;
+	std::string					alias;
+	std::vector< std::string >	methods;
+	std::vector< Location >		locations;
+	int							autoindex;
+	int							max_body_size;
+
+
+	// MARK: - Static Struct Methods
+
+	static Location	getTestConfig( void ) {}
+
 };
 
-class ServerConfig
-{
-	public:
-		std::string					_host;
-		std::string					_name;
-		std::string					_port;
-		std::string					_error_page;
-		std::vector<Location>		_locations;
 
-		Location getLocation(const std::string &path) const
-		{
-			( void )path;
-			return this->_locations[0];
-		}
+struct ServerConfig {
+	
+	std::string					host;
+	std::string					name;
+	std::string					port;
+	std::string					error_page;
+	std::vector<Location>		locations;
+
+
+	// MARK: - struct methods
+
+	Location	getLocation( const std::string &path ) const;
+
+
+	// MARK: - static struct methods
+
+	static ServerConfig	getTestConfig( void );
+
 };
 
-class Config
-{
-    public:
-        Config(std::string &path); // argv[1]
-		Config(void) // debug
-		{
-			this->_error_page = "";
-			this->_root = "/";
-			
-			ServerConfig srvCfg;
-			srvCfg._host = "localhost";
-			srvCfg._port = "3490";
-			srvCfg._name = "webserv";
-			
-			Location loc;
-			loc._path = "/";
-			loc._root = "/";
-			loc._methods.push_back( "GET" );
-			loc._max_body_size = 8192;
-			loc._index = "index.html";
-			loc._cgi_path = "ubuntu_cgi_tester";
-			loc._cgi_ext = "";
-			loc._autoindex = 0;
-			loc._alias = "";
 
-			srvCfg._locations.push_back(loc);
-			this->_servers.push_back(srvCfg);
-		}
+struct Config {
 
-        std::vector<ServerConfig>	_servers;
-        std::string					_error_page;
-        std::string					_root;
+	std::vector< ServerConfig >	servers;
+	std::string					error_page;
+	std::string					root;
+
+
+	// MARK: - Static Struct Methods
+
+	static Config	getTestConfig( void );
+
 };
