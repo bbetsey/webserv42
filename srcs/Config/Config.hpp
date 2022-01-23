@@ -22,7 +22,7 @@ struct Location {
 
 	// MARK: - Static Struct Methods
 
-	static Location	getTestConfig( void ) {}
+	static Location	getTestConfig( void );
 
 };
 
