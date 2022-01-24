@@ -24,7 +24,9 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 		if ( new_event < 1 && errno == EINTR ) {
 			std::cout << "Network: kevent loop" << std::endl;
 			break;
-			// Обрабатыывать сигнал выхода с помощью SIGINT
+			// Обрабатыывать сигнал выхода с помощью SIGINT https://www.tutorialspoint.com/cplusplus/cpp_signal_handling.htm
+			// https://habr.com/ru/post/600123/
+			// https://cpp.hotexamples.com/ru/examples/-/-/kevent/cpp-kevent-function-examples.html
 		} 
 		for ( int i = 0; i < new_event; ++i ) {
 			int event_fd = events[i].ident;
