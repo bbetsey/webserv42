@@ -22,6 +22,8 @@ int	Socket::start( void ) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
+	
+
 	errno = 0;
 
 	if ( ( status = getaddrinfo( _host.c_str(), _port.c_str(), &hints, &_res ) ) != 0 ) {
@@ -33,6 +35,14 @@ int	Socket::start( void ) {
 		std::cout << "socket fd error: " << std::string( strerror( errno ) ) << std::endl;
 		return 0;
 	}
+
+	int arg = fcntl(_sockfd, F_GETFL);
+	long flags = arg & ~O_NONBLOCK;
+	flags |= O_NONBLOCK;
+	fcntl(_sockfd, F_SETFL, flags);
+
+	int opt = 1;
+	setsockopt( _sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof( opt ) );
 
 	if ( bind( _sockfd, _res->ai_addr, _res->ai_addrlen ) == - 1 ) {
 		std::cout << "socket bind error: " << std::string( strerror( errno ) ) << std::endl;

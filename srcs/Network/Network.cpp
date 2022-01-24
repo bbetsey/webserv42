@@ -17,11 +17,14 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 	struct kevent			events[1024];
 	int						new_event;
 
+	errno = 0;
+
 	while ( 1 ) {
 		new_event = kevent( kq, NULL, 0, events, len, NULL );
-		if ( new_event < 1 ) {
+		if ( new_event < 1 && errno == EINTR ) {
 			std::cout << "Network: kevent loop" << std::endl;
 			break;
+			// Обрабатыывать сигнал выхода с помощью SIGINT
 		} 
 		for ( int i = 0; i < new_event; ++i ) {
 			int event_fd = events[i].ident;
@@ -37,30 +40,13 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 			}
 			else if ( is_listen_socket( kset, events[i].ident, len ) ) {
 				std::cout << "New connection request" << std::endl;
-
-				struct sockaddr_in	new_addr;
-				socklen_t			socklen = sizeof( new_addr );
-				int 				client_fd;
-				
-				client_fd = accept( events[i].ident, ( struct sockaddr * )&new_addr, &socklen );
-
-				struct kevent		new_event;
-				t_udata				new_data[1];
-							
-				new_data->is_send = 0;
-				new_data->listen_socket = events[i].ident;
-				new_data->addr = &new_addr;
-
-				EV_SET( &new_event, client_fd, EVFILT_READ, EV_ADD, 0, 0, new_data );
-
-				if ( kevent( kq, &new_event, 1, NULL, 0, NULL ) == -1 ) {
-					std::cout << "Network: kevent add new client" << std::endl;
-					break;
-				}
-
+				accept_new_client( kq, events[i].ident );
 			}
 			else if ( events[i].filter == EVFILT_READ ) {
 				recv_msg( events[i] );
+
+				t_udata *data = ( t_udata * )(events[i].udata);
+				data->is_send = 0;
 				
 				EV_SET( &events[i], event_fd, EVFILT_WRITE, EV_ADD, 0, 0, events[i].udata );
 				if ( kevent( kq, &events[i], 1, NULL, 0, NULL ) == -1 ) {
@@ -73,11 +59,13 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 
 				if ( !data->is_send ) {
 					send_msg( events[i] );
-					data->is_send = 1;
+					data->is_send = !data->is_send;
 				}
+
 			}
 		}
 	}
+	close(kq);
 
 }
 
@@ -98,15 +86,38 @@ void	Network::recv_msg( struct kevent &event ) {
 		buf[ read_bytes ] = '\0';
 		std::cout << buf << std::endl;
 	}
-	std::cout << "\n========== END MSG ==========\n" << std::endl;
 }
 
 void	Network::send_msg( struct kevent &event ) {
-	std::string msg = "Hello World!";
+	std::string msg = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
+	msg += "<html><body><h1>Hello World!</h1></body></html>";
 
 	send( event.ident, msg.c_str(), msg.length(), 0 );
 }
 
+
+// MARK - Accept, Disconnect
+
+void	Network::accept_new_client( int kq, int fd ) {
+	struct sockaddr_in	new_addr;
+	socklen_t			socklen = sizeof( new_addr );
+	int 				client_fd;
+	
+	client_fd = accept( fd, ( struct sockaddr * )&new_addr, &socklen );
+
+	struct kevent		new_event;
+	t_udata				new_data[1];
+				
+	new_data->is_send = 0;
+	new_data->listen_socket = fd;
+	new_data->addr = &new_addr;
+
+	EV_SET( &new_event, client_fd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, new_data );
+
+	if ( kevent( kq, &new_event, 1, NULL, 0, NULL ) == -1 ) {
+		std::cout << "Network: kevent add new client" << std::endl;
+	}
+}
 
 // MARK: - Class Methods
 

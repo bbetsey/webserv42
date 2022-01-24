@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 
+
 #include "Socket.hpp"
 #include "../Config/Config.hpp"
 
@@ -41,6 +42,8 @@ class Network {
 		int		is_listen_socket( struct kevent *kset, int fd, int len );
 		void	recv_msg( struct kevent &event );
 		void	send_msg( struct kevent &event );
+
+		void	accept_new_client( int kq, int fd );
 	
 
 	public:
