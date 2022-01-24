@@ -16,8 +16,6 @@ Network::~Network( void ) {}
 void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 	struct kevent			events[1024];
 	int						new_event;
-	struct sockaddr_storage	addr;
-	socklen_t				socklen = sizeof( addr );
 
 	while ( 1 ) {
 		new_event = kevent( kq, NULL, 0, events, len, NULL );
@@ -39,37 +37,41 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 			}
 			else if ( is_listen_socket( kset, events[i].ident, len ) ) {
 				std::cout << "New connection request" << std::endl;
-				int client_fd = accept( events[i].ident, ( struct sockaddr * )&addr, &socklen );
+
+				struct sockaddr_in	new_addr;
+				socklen_t			socklen = sizeof( new_addr );
+				int 				client_fd;
 				
-				struct kevent event_set;
-				t_udata	new_data[1];
+				client_fd = accept( events[i].ident, ( struct sockaddr * )&new_addr, &socklen );
+
+				struct kevent		new_event;
+				t_udata				new_data[1];
+							
 				new_data->is_send = 0;
 				new_data->listen_socket = events[i].ident;
-				event_set.udata = new_data;
-				EV_SET( &event_set, client_fd, EVFILT_READ, EV_ADD, 0, 0, 0 );
-				if ( kevent( kq, &event_set, 1, NULL, 0, NULL ) == -1 ) {
+				new_data->addr = &new_addr;
+
+				EV_SET( &new_event, client_fd, EVFILT_READ, EV_ADD, 0, 0, new_data );
+
+				if ( kevent( kq, &new_event, 1, NULL, 0, NULL ) == -1 ) {
 					std::cout << "Network: kevent add new client" << std::endl;
 					break;
 				}
 
-				std::cout << "New connection accepted" << std::endl;
 			}
 			else if ( events[i].filter == EVFILT_READ ) {
-				std::cout << "In read filter" << std::endl;
 				recv_msg( events[i] );
-				struct kevent event_set;
-				EV_SET( &event_set, event_fd, EVFILT_WRITE, EV_ADD, 0, 0, 0 );
-				if ( kevent( kq, &event_set, 1, NULL, 0, NULL ) == -1 ) {
+				
+				EV_SET( &events[i], event_fd, EVFILT_WRITE, EV_ADD, 0, 0, events[i].udata );
+				if ( kevent( kq, &events[i], 1, NULL, 0, NULL ) == -1 ) {
 					std::cout << "Network: kevent add new client" << std::endl;
 					break;
 				}
 			}
 			else if ( events[i].filter == EVFILT_WRITE ) {
-				std::cout << "Check udata flag" << std::endl;
-				t_udata *data = ( t_udata * )events[i].udata;
+				t_udata *data = ( t_udata * )(events[i].udata);
 
 				if ( !data->is_send ) {
-					std::cout << "In write filter" << std::endl;
 					send_msg( events[i] );
 					data->is_send = 1;
 				}

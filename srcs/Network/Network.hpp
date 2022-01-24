@@ -20,12 +20,13 @@
 
 typedef struct s_udata {
 
-	int		is_send;
-	int		listen_socket;
-	int		msg_size;
-	int		cur_size;
+	int					is_send;
+	int					listen_socket;
+	struct sockaddr_in	*addr;
+	int					msg_size;
+	int					cur_size;
 
-}			t_udata;
+}						t_udata;
 
 class Network {
 
