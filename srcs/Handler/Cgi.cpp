@@ -35,176 +35,81 @@ Cgi::Cgi(Request &req) : _req(req), _method(req.getMethod()), _uri(req.getUri())
     this->_env["CONTENT_LENGTH"] = itos(this->_req.getBody().length());
 }
 
-static char	**getEnvAsCstrArray(const std::map<std::string, std::string> &_env)
+static char **map2ca(std::map<std::string, std::string> &map) // std::map<std::string, std::string> to char array
 {
-	char	**ret = new char*[_env.size() + 1];
-	int	j = 0;
+	char **ret = new char* [map.size() + 1];
+	int i = 0;
+	std::map<std::string, std::string>::iterator it = map.begin(), ite = map.end();
 
-	for (std::map<std::string, std::string>::const_iterator i = _env.begin(); i != _env.end(); i++)
-    {
-		std::string	element = i->first + "=" + i->second;
-		ret[j] = new char[element.size() + 1];
-		ret[j] = strcpy(ret[j], (const char*)element.c_str());
-		j++;
+	for (; it != ite; it++)
+	{
+		ret[i] = new char[it->first.size() + it->second.size() + 2];
+		strcpy(ret[i], (it->first + "=" + it->second).c_str());
+		i++;
 	}
-	ret[j] = NULL;
-	return ret;
+	ret[i] = 0;
+	return (ret);
+}
+
+static void freeCa(char **ca)
+{
+	for (size_t i = 0; ca[i]; i++)
+		delete[] ca[i];
+	delete[] ca;
 }
 
 std::string Cgi::execute(void)
 {
-	pid_t		pid;
-	int			saveStdin;
-	int			saveStdout;
-	char		**env;
-	std::string	newBody;
+	std::string ret;
+	char **env = map2ca(this->_env);
+	int tmpIn = dup(0), tmpOut = dup(1);
+	FILE *fIn = tmpfile(), *fOut = tmpfile();
+	long fdIn = fileno(fIn), fdOut = fileno(fOut);
 
-	try {
-		env = getEnvAsCstrArray(this->_env);
-	}
-	catch (std::bad_alloc &e) {
-		std::cerr << e.what() << std::endl;
-	}
+	write(fdIn, this->_body.c_str(), this->_body.length());
+	lseek(fdIn, 0, 0);
 
-	// SAVING STDIN AND STDOUT IN ORDER TO TURN THEM BACK TO NORMAL LATER
-	saveStdin = dup(STDIN_FILENO);
-	saveStdout = dup(STDOUT_FILENO);
-
-	FILE	*fIn = tmpfile();
-	FILE	*fOut = tmpfile();
-	long	fdIn = fileno(fIn);
-	long	fdOut = fileno(fOut);
-	int		ret = 1;
-
-	write(fdIn, _body.c_str(), _body.size());
-	lseek(fdIn, 0, SEEK_SET);
-
-	pid = fork();
+	pid_t pid = fork();
 
 	if (pid == -1)
 	{
-		std::cerr << "Fork crashed." << std::endl;
 		return ("Status: 500\r\n\r\n");
+		freeCa(env);
 	}
-	else if (!pid)
+	else if (pid == 0)
 	{
-		char * const * nll = NULL;
-
-		dup2(fdIn, STDIN_FILENO);
-		dup2(fdOut, STDOUT_FILENO);
-		execve(this->_cfg.getLocation(this->_uri._path)._cgi_path.c_str(), nll, env);
-		std::cerr << "Execve crashed. " << this->_cfg.getLocation(this->_uri._path)._cgi_path.c_str() << std::endl;
-		write(STDOUT_FILENO, "Status: 500\r\n\r\n", 15);
+		dup2(fdIn, 0);
+		dup2(fdOut, 1);
+		char **null = NULL;
+		execve(this->_cfg.getLocation(this->_uri._path)._cgi_path.c_str(), null, env);
+		write(1, "Status: 500\r\n\r\n", 15);
 	}
 	else
 	{
-		char	buffer[CGI_BUFSIZE] = {0};
+		char buff[65536] = {0};
 
 		waitpid(-1, NULL, 0);
-		lseek(fdOut, 0, SEEK_SET);
+		lseek(fdOut, 0, 0);
 
-		ret = 1;
-		while (ret > 0)
+		while (read(fdOut, buff, 65536) > 0)
 		{
-			memset(buffer, 0, CGI_BUFSIZE);
-			ret = read(fdOut, buffer, CGI_BUFSIZE - 1);
-			newBody += buffer;
+			ret += buff;
+			memset(buff, 0, 65536);
 		}
 	}
 
-	dup2(saveStdin, STDIN_FILENO);
-	dup2(saveStdout, STDOUT_FILENO);
+	dup2(tmpIn, 0);
+	dup2(tmpOut, 1);
 	fclose(fIn);
 	fclose(fOut);
 	close(fdIn);
 	close(fdOut);
-	close(saveStdin);
-	close(saveStdout);
+	close(tmpIn);
+	close(tmpOut);
 
-	for (size_t i = 0; env[i]; i++)
-		delete[] env[i];
-	delete[] env;
-
+	freeCa(env);
 	if (!pid)
 		exit(0);
 
-	return (newBody);
+	return (ret);
 }
-
-// std::string Cgi::execute(void)
-// {
-//     char        **env;
-//     std::string newBody;
-//     try
-//     {
-//         env = getEnvAsCstrArray(this->_env);
-//     }
-//     catch (std::exception &e)
-//     {
-//         std::cout << e.what();
-//         return ("Status: 500\r\n\r\n");
-//     }
-
-// 	int			saveStdin = dup(STDIN_FILENO);
-// 	int			saveStdout = dup(STDOUT_FILENO);
-
-//     FILE *fIn = tmpfile();
-//     FILE *fOut = tmpfile();
-//     long fdIn = fileno(fIn);
-//     long fdOut = fileno(fOut);
-//     int ret = 1;
-
-//     write(fdIn, this->_body.c_str(), this->_body.size());
-//     lseek(fdIn, 0, SEEK_SET);
-
-//     pid_t pid = fork();
-
-//     if (pid == -1)
-//     {
-//         std::cout << "Fork crashed" << std::endl;
-//         return ("Status: 500\r\n\r\n");
-//     }
-//     else if (pid == 0)
-//     {
-//         char * const * nll = NULL;
-
-//         dup2(fdIn, STDIN_FILENO);
-//         dup2(fdOut, STDOUT_FILENO);
-//         execve(this->_cfg.getLocation(this->_uri._path)._cgi_path.c_str(), nll, env);
-//         std::cout << "Execve crashed" << std::endl;
-//         return ("Status: 500\r\n\r\n");
-//     }
-//     else
-//     {
-//         char	buffer[65536] = {0};
-
-//         waitpid(-1, NULL, 0);
-//         lseek(fdOut, 0, SEEK_SET);
-
-//         ret = 1;
-// 		while (ret > 0)
-// 		{
-// 			memset(buffer, 0, 65536);
-// 			ret = read(fdOut, buffer, 65536 - 1);
-// 			newBody += buffer;
-// 		}
-//     }
-
-//     dup2(saveStdin, STDIN_FILENO);
-// 	dup2(saveStdout, STDOUT_FILENO);
-// 	fclose(fIn);
-// 	fclose(fOut);
-// 	close(fdIn);
-// 	close(fdOut);
-// 	close(saveStdin);
-// 	close(saveStdout);
-
-//     for (size_t i = 0; env[i]; i++)
-// 		delete[] env[i];
-// 	delete[] env;
-
-//     if (!pid)
-// 		exit(0);
-
-// 	return (newBody);
-// }

@@ -6,9 +6,11 @@ SRCS	=	srcs/main.cpp \
 			srcs/Utils/Utils.cpp \
 			srcs/Utils/Uri.cpp \
 
-FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror -I/usr/include/kqueue
-LDFLAGS =	-lkqueue
 OBJS	= 	$(SRCS:cpp=o)
+
+OS 		=	$(shell lsb_release -si)
+FLAGS	=	-std=c++98 -pedantic -fsanitize=address -Wall -Wextra -Werror $(if $(filter-out Ubuntu,$(OS)),,-I/usr/include/kqueue)
+LDFLAGS =	$(if $(filter-out Ubuntu,$(OS)),,-lkqueue)
 
 all: $(NAME)
 
