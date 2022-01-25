@@ -51,7 +51,25 @@ void Request::parseBody(std::vector<std::string> &lines, size_t &i)
         this->_body += lines[i];
 }
 
-std::string Request::response(void) { return Cgi(*this).execute(); }
+static std::string mGet(std::string &header, const int &status)
+{
+    if (status == 200)
+        return (header);
+    return (header);
+}
+
+std::string Request::response(void)
+{
+    std::string header = Cgi(*this).execute();
+    int status = atoi(header.substr(8, 10).c_str());
+
+    if (this->_method == "GET")
+        return mGet(header, status);
+    else
+        return header;
+}
+
+
 const std::string &Request::getMethod(void) const { return this->_method; }
 const Uri &Request::getUri(void) const { return this->_uri; }
 const std::string &Request::getBody(void) const { return this->_body; }

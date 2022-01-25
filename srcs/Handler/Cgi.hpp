@@ -11,8 +11,6 @@
 #include <sys/wait.h>
 #include <map>
 
-#define CGI_BUFSIZE 65536
-
 class Request;
 
 class Cgi
