@@ -21,6 +21,7 @@
 
 typedef struct s_udata {
 
+	int					flag;
 	int					is_send;
 	int					listen_socket;
 	struct sockaddr_in	*addr;
