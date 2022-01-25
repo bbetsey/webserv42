@@ -8,6 +8,6 @@ int main(void)
 "GET /index.html HTTP/1.1\r\n\
 \r\n";
 
-    Config cfg;
-    std::cout << Request(getMethod, cfg._servers[0]).response();
+    ServerConfig cfg;
+    std::cout << Request(getMethod, cfg.getTestConfig()).response();
 }

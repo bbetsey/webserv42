@@ -8,6 +8,8 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <sstream>
+#include <fstream>
 
 #define CRLF "\r\n"
 
@@ -25,7 +27,7 @@ class Request
         const ServerConfig &getConfig(void) const;
         std::map<std::string, std::string> &getHeaders(void);
 
-        
+        std::string mGet(const std::string &header, const int &status);
     private:
         const ServerConfig &_cfg;
 

@@ -51,22 +51,32 @@ void Request::parseBody(std::vector<std::string> &lines, size_t &i)
         this->_body += lines[i];
 }
 
-static std::string mGet(std::string &header, const int &status)
+static std::string readFile(std::string &path)
 {
+    std::ifstream t((path.substr(1, path.length())).c_str());
+    std::stringstream buffer;
+    buffer << t.rdbuf();
+    return buffer.str();
+}
+
+std::string Request::mGet(const std::string &header, const int &status)
+{
+    std::string body;
+
     if (status == 200)
-        return (header);
-    return (header);
+        return header + readFile(this->_uri._path);
+    return header;
 }
 
 std::string Request::response(void)
 {
     std::string header = Cgi(*this).execute();
-    int status = atoi(header.substr(8, 10).c_str());
+    int status = atoi(header.substr(8, 3).c_str());
 
     if (this->_method == "GET")
-        return mGet(header, status);
-    else
-        return header;
+        return this->mGet(header, status);
+
+    return header;
 }
 
 

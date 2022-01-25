@@ -5,6 +5,7 @@ SRCS	=	srcs/main.cpp \
 			srcs/Handler/Cgi.cpp \
 			srcs/Utils/Utils.cpp \
 			srcs/Utils/Uri.cpp \
+			srcs/Config/Config.cpp \
 
 OBJS	= 	$(SRCS:cpp=o)
 
