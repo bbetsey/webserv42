@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "Network.hpp"
+#include "../Config/Config.hpp"
 
 #define PORT "3490"
 #define HOST "localhost"
@@ -12,13 +13,7 @@
 
 
 int	main( void ) {
-	t_server	server;
-	t_conf		conf;
-
-	server.host = HOST;
-	server.port = PORT;
-	server.name = HOST;
-	conf.servers.push_back( server );
+	Config conf = Config::getTestConfig();
 
 	Network	network( conf );
 	network.start();

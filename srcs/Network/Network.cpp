@@ -3,7 +3,7 @@
 
 // MARK: - Class Constructor
 
-Network::Network( t_conf conf ) : _conf( conf ) {}
+Network::Network( const Config &conf ) : _conf( conf ) {}
 
 
 // MARK: - Class Distructor
@@ -16,14 +16,17 @@ Network::~Network( void ) {}
 void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 	struct kevent			events[1024];
 	int						new_event;
-	struct sockaddr_storage	addr;
-	socklen_t				socklen = sizeof( addr );
+
+	errno = 0;
 
 	while ( 1 ) {
 		new_event = kevent( kq, NULL, 0, events, len, NULL );
-		if ( new_event < 1 ) {
+		if ( new_event < 1 && errno == EINTR ) {
 			std::cout << "Network: kevent loop" << std::endl;
 			break;
+			// Обрабатыывать сигнал выхода с помощью SIGINT https://www.tutorialspoint.com/cplusplus/cpp_signal_handling.htm
+			// https://habr.com/ru/post/600123/
+			// https://cpp.hotexamples.com/ru/examples/-/-/kevent/cpp-kevent-function-examples.html
 		} 
 		for ( int i = 0; i < new_event; ++i ) {
 			int event_fd = events[i].ident;
@@ -39,43 +42,32 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 			}
 			else if ( is_listen_socket( kset, events[i].ident, len ) ) {
 				std::cout << "New connection request" << std::endl;
-				int client_fd = accept( events[i].ident, ( struct sockaddr * )&addr, &socklen );
-				
-				struct kevent event_set;
-				t_udata	new_data[1];
-				new_data->is_send = 0;
-				new_data->listen_socket = events[i].ident;
-				event_set.udata = new_data;
-				EV_SET( &event_set, client_fd, EVFILT_READ, EV_ADD, 0, 0, 0 );
-				if ( kevent( kq, &event_set, 1, NULL, 0, NULL ) == -1 ) {
-					std::cout << "Network: kevent add new client" << std::endl;
-					break;
-				}
-
-				std::cout << "New connection accepted" << std::endl;
+				accept_new_client( kq, events[i].ident );
 			}
 			else if ( events[i].filter == EVFILT_READ ) {
-				std::cout << "In read filter" << std::endl;
 				recv_msg( events[i] );
-				struct kevent event_set;
-				EV_SET( &event_set, event_fd, EVFILT_WRITE, EV_ADD, 0, 0, 0 );
-				if ( kevent( kq, &event_set, 1, NULL, 0, NULL ) == -1 ) {
+
+				t_udata *data = ( t_udata * )(events[i].udata);
+				data->is_send = 0;
+				
+				EV_SET( &events[i], event_fd, EVFILT_WRITE, EV_ADD, 0, 0, events[i].udata );
+				if ( kevent( kq, &events[i], 1, NULL, 0, NULL ) == -1 ) {
 					std::cout << "Network: kevent add new client" << std::endl;
 					break;
 				}
 			}
 			else if ( events[i].filter == EVFILT_WRITE ) {
-				std::cout << "Check udata flag" << std::endl;
-				t_udata *data = ( t_udata * )events[i].udata;
+				t_udata *data = ( t_udata * )(events[i].udata);
 
 				if ( !data->is_send ) {
-					std::cout << "In write filter" << std::endl;
 					send_msg( events[i] );
-					data->is_send = 1;
+					data->is_send = !data->is_send;
 				}
+
 			}
 		}
 	}
+	close(kq);
 
 }
 
@@ -96,15 +88,38 @@ void	Network::recv_msg( struct kevent &event ) {
 		buf[ read_bytes ] = '\0';
 		std::cout << buf << std::endl;
 	}
-	std::cout << "\n========== END MSG ==========" << std::endl;
 }
 
 void	Network::send_msg( struct kevent &event ) {
-	std::string msg = "Hello World!";
+	std::string msg = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\n\r\n";
+	msg += "<html><body><h1>Hello World!</h1></body></html>";
 
 	send( event.ident, msg.c_str(), msg.length(), 0 );
 }
 
+
+// MARK - Accept, Disconnect
+
+void	Network::accept_new_client( int kq, int fd ) {
+	struct sockaddr_in	new_addr;
+	socklen_t			socklen = sizeof( new_addr );
+	int 				client_fd;
+	
+	client_fd = accept( fd, ( struct sockaddr * )&new_addr, &socklen );
+
+	struct kevent		new_event;
+	t_udata				new_data[1];
+				
+	new_data->is_send = 0;
+	new_data->listen_socket = fd;
+	new_data->addr = &new_addr;
+
+	EV_SET( &new_event, client_fd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, new_data );
+
+	if ( kevent( kq, &new_event, 1, NULL, 0, NULL ) == -1 ) {
+		std::cout << "Network: kevent add new client" << std::endl;
+	}
+}
 
 // MARK: - Class Methods
 
@@ -114,7 +129,7 @@ void	Network::start( void ) {
 
 	kq = kqueue();
 
-	std::vector< s_server >::iterator	it = _conf.servers.begin();
+	std::vector< ServerConfig >::iterator	it = _conf.servers.begin();
 	for ( int i = 0; it != _conf.servers.end(); ++it, ++i ) {
 		Socket	socket = Socket( it->host, it->port );
 		if ( socket.start() ) {

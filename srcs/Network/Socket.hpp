@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include <iostream>
 #include <string.h>
+#include <fcntl.h>
 
 # define BACKLOG 10
 

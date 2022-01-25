@@ -7,15 +7,15 @@ Cgi::Cgi(Request &req) : _req(req), _method(req.getMethod()), _uri(req.getUri())
     this->_env["SERVER_SOFTWARE"] = "webserv/0.1";
     this->_env["GATEWAY_INTERFACE"] = "CGI/1.1";
     this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
-    this->_env["SERVER_PORT"] = this->_cfg._port;
+    this->_env["SERVER_PORT"] = this->_cfg.port;
     this->_env["REQUEST_METHOD"] = this->_req.getMethod();
     this->_env["PATH_INFO"] = this->_uri._path;
     this->_env["PATH_TRANSLATED"] = this->_uri._path;
-    this->_env["SCRIPT_NAME"] = this->_cfg.getLocation(this->_uri._path)._cgi_path;
-	this->_env["SCRIPT_FILENAME"] = this->_cfg.getLocation(this->_uri._path)._cgi_path;
+    this->_env["SCRIPT_NAME"] = this->_cfg.getLocation(this->_uri._path).cgi_path;
+	this->_env["SCRIPT_FILENAME"] = this->_cfg.getLocation(this->_uri._path).cgi_path;
     this->_env["QUERY_STRING"] = this->_uri._qString;
-    this->_env["REMOTE_ADDR"] = this->_cfg._host;
-	this->_env["REMOTEaddr"] = this->_cfg._host;
+    this->_env["REMOTE_ADDR"] = this->_cfg.host;
+	this->_env["REMOTEaddr"] = this->_cfg.host;
 	this->_env["REQUEST_URI"] = this->_uri._path + this->_uri._qString;
 	this->_env["REDIRECT_STATUS"] = "200";
 
@@ -81,7 +81,7 @@ std::string Cgi::execute(void)
 		dup2(fdIn, 0);
 		dup2(fdOut, 1);
 		char **null = NULL;
-		execve(this->_cfg.getLocation(this->_uri._path)._cgi_path.c_str(), null, env);
+		execve(this->_cfg.getLocation(this->_uri._path).cgi_path.c_str(), null, env);
 		write(1, "Status: 500\r\n\r\n", 15);
 	}
 	else

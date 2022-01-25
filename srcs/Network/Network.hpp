@@ -12,7 +12,9 @@
 #include <iostream>
 #include <sstream>
 
+
 #include "Socket.hpp"
+#include "../Config/Config.hpp"
 
 # define BUFFER_READ 4096
 
@@ -62,17 +64,19 @@ typedef struct s_conf {
 
 typedef struct s_udata {
 
-	int		is_send;
-	int		listen_socket;
-	int		msg_size;
+	int					is_send;
+	int					listen_socket;
+	struct sockaddr_in	*addr;
+	int					msg_size;
+	int					cur_size;
 
-}			t_udata;
+}						t_udata;
 
 class Network {
 
 	private:
 
-		t_conf	_conf;
+		Config	_conf;
 
 
 		// MARK: - Private Methods
@@ -81,13 +85,15 @@ class Network {
 		int		is_listen_socket( struct kevent *kset, int fd, int len );
 		void	recv_msg( struct kevent &event );
 		void	send_msg( struct kevent &event );
+
+		void	accept_new_client( int kq, int fd );
 	
 
 	public:
 
 		// MARK: - Class Constructor
 
-		Network( t_conf conf );
+		Network( const Config &conf );
 
 
 		// MARK: - Class Distructor
@@ -102,7 +108,7 @@ class Network {
 
 		// MARK: - Getters
 
-		t_conf	get_conf( void );
+		const Config	get_conf( void ) const;
 
 };
 
