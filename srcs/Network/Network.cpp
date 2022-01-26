@@ -17,10 +17,9 @@ Network::~Network( void ) {}
 // MARK: - Private Methods
 
 void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
+
 	struct kevent			events[1024];
 	int						new_events;
-
-	errno = 0;
 
 	while ( 1 ) {
 
@@ -42,6 +41,7 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 			else if ( events[i].filter == EVFILT_READ ) {
 				
 				if ( events[i].flags & EV_EOF ) {
+					std::cout << "EOF READ" << std::endl;
 					EV_SET( &events[i], event_fd, EVFILT_READ, EV_DELETE, 0, 0, 0 );
 					kevent( kq, &events[i], 1, NULL, 0, NULL );
 					if ( data->flag ) close( event_fd );
@@ -52,9 +52,11 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 				}
 				
 			}
+			
 			else if ( events[i].filter == EVFILT_WRITE ) {
 
 				if ( events[i].flags & EV_EOF ) {
+					std::cout << "EOF WRITE" << std::endl;
 					EV_SET( &events[i], event_fd, EVFILT_WRITE, EV_DELETE, 0, 0, 0 );
 					kevent( kq, &events[i], 1, NULL, 0, NULL );
 					if ( data->flag ) close( event_fd );
@@ -98,7 +100,7 @@ void	Network::send_msg( struct kevent &event ) {
 }
 
 
-// MARK - Accept, Disconnect
+// MARK - Accept, Read, Write
 
 void	Network::accept_new_client( int kq, int fd ) {
 	struct sockaddr_in	new_addr;
@@ -118,8 +120,8 @@ void	Network::accept_new_client( int kq, int fd ) {
 	new_data->listen_socket = fd;
 	new_data->addr = &new_addr;
 
-	EV_SET( &new_event[0], client_fd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, &new_data[0] );
-	EV_SET( &new_event[1], client_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, &new_data[0] );
+	EV_SET( &new_event[0], client_fd, EVFILT_READ, EV_ADD, 0, 0, new_data );
+	EV_SET( &new_event[1], client_fd, EVFILT_WRITE, EV_ADD, 0, 0, new_data );
 
 	if ( kevent( kq, new_event, 2, NULL, 0, NULL ) == -1 ) {
 		std::cout << "Network: kevent add new client" << std::endl;
