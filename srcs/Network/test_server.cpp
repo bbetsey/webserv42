@@ -6,6 +6,7 @@
 
 #include "Network.hpp"
 #include "../Config/Config.hpp"
+#include "../Includes/webserv.hpp"
 
 #define PORT "3490"
 #define HOST "localhost"

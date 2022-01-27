@@ -9,6 +9,8 @@
 #include <string.h>
 #include <fcntl.h>
 
+#include "../Includes/webserv.hpp"
+
 # define BACKLOG 10
 
 

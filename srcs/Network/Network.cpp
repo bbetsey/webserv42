@@ -21,7 +21,7 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 	struct kevent			events[1024];
 	int						new_events;
 
-	while ( 1 ) {
+	while (1) {
 
 		new_events = kevent( kq, NULL, 0, events, len, NULL );
 
@@ -32,46 +32,20 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 
 		for ( int i = 0; i < new_events; ++i ) {
 			
-			int		event_fd = events[i].ident;
 			t_udata	*data = ( t_udata * )(events[i].udata);
 
 			if ( is_listen_socket( kset, events[i].ident, len ) )
 				accept_new_client( kq, events[i].ident );
 
-			else if ( events[i].filter == EVFILT_READ ) {
-				
-				if ( events[i].flags & EV_EOF ) {
-					std::cout << "EOF READ" << std::endl;
-					EV_SET( &events[i], event_fd, EVFILT_READ, EV_DELETE, 0, 0, 0 );
-					kevent( kq, &events[i], 1, NULL, 0, NULL );
-					if ( data->flag ) close( event_fd );
-					else data->flag = 1;
-				} else {
-					recv_msg( events[i] );
-					data->is_send = 0;
-				}
-				
-			}
+			else if ( events[i].filter == EVFILT_READ )	
+				read_socket( kq, events[i], data );
 			
-			else if ( events[i].filter == EVFILT_WRITE ) {
-
-				if ( events[i].flags & EV_EOF ) {
-					std::cout << "EOF WRITE" << std::endl;
-					EV_SET( &events[i], event_fd, EVFILT_WRITE, EV_DELETE, 0, 0, 0 );
-					kevent( kq, &events[i], 1, NULL, 0, NULL );
-					if ( data->flag ) close( event_fd );
-					else data->flag = 1;
-				} else {
-					if ( data->is_send ) continue;
-					send_msg( events[i] );
-					data->is_send = 1;
-				}
-
-			}
+			else if ( events[i].filter == EVFILT_WRITE )
+				write_socket( kq, events[i], data );
 		}
 	}
-	close(kq);
 
+	close(kq);
 }
 
 
@@ -117,17 +91,46 @@ void	Network::accept_new_client( int kq, int fd ) {
 				
 	new_data->is_send = 0;
 	new_data->flag = 0;
-	new_data->listen_socket = fd;
 	new_data->addr = &new_addr;
 
 	EV_SET( &new_event[0], client_fd, EVFILT_READ, EV_ADD, 0, 0, new_data );
 	EV_SET( &new_event[1], client_fd, EVFILT_WRITE, EV_ADD, 0, 0, new_data );
 
-	if ( kevent( kq, new_event, 2, NULL, 0, NULL ) == -1 ) {
+	if ( kevent( kq, new_event, 2, NULL, 0, NULL ) == -1 )
 		std::cout << "Network: kevent add new client" << std::endl;
+
+	LOG( "new connection", INFO );
+}
+
+void	Network::read_socket( int kq, struct kevent &event, t_udata *data ) {
+
+	if ( event.flags & EV_EOF ) {
+		std::cout << "EOF READ" << std::endl;
+		EV_SET( &event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, 0 );
+		kevent( kq, &event, 1, NULL, 0, NULL );
+		if ( data->flag ) close( event.ident );
+		else data->flag = 1;
+	} else {
+		recv_msg( event );
+		data->is_send = 0;
 	}
 
-	std::cout << "New connection" << std::endl;
+}
+
+void	Network::write_socket( int kq, struct kevent &event, t_udata *data ) {
+
+	if ( event.flags & EV_EOF ) {
+		std::cout << "EOF WRITE" << std::endl;
+		EV_SET( &event, event.ident, EVFILT_WRITE, EV_DELETE, 0, 0, 0 );
+		kevent( kq, &event, 1, NULL, 0, NULL );
+		if ( data->flag ) close( event.ident );
+		else data->flag = 1;
+	} else {
+		if ( data->is_send ) return;
+		send_msg( event );
+		data->is_send = 1;
+	}
+
 }
 
 
