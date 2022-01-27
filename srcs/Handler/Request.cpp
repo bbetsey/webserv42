@@ -51,34 +51,48 @@ void Request::parseBody(std::vector<std::string> &lines, size_t &i)
         this->_body += lines[i];
 }
 
-static std::string readFile(std::string &path)
+std::string Request::readFile(void)
 {
-    std::ifstream t((path.substr(1, path.length())).c_str());
+    std::ifstream file((this->_uri._path.substr(1, this->_uri._path.length())).c_str());
     std::stringstream buffer;
-    buffer << t.rdbuf();
+    buffer << file.rdbuf();
     return buffer.str();
 }
 
-std::string Request::mGet(const std::string &header, const int &status)
+std::string Request::genGetBody(void)
 {
-    std::string body;
+    std::string cgiResponse = Cgi(*this).execute();
+    std::string response;
+    int status = atoi(cgiResponse.substr(8, 3).c_str());
 
     if (status == 200)
-        return header + readFile(this->_uri._path);
-    return header;
+        response = this->readFile();
+    else
+        response = "<!DOCTYPE html>\n<html><title>Ooops</title><body><h1>Look like your request was an error. Or ur life?</h1></body></html>\n";
+
+    return (this->genResponse(cgiResponse, response));
+}
+
+std::string Request::genResponse(std::string header, std::string &body)
+{
+    header = header.substr(0, header.length() - 4);
+    std::string ret = header + CRLF
+                    + "Content-Length: " + itos(body.length()) + CRLF
+                    + "Date: " + getDate() + CRLF
+                    + "Server: webserv/0.1\r\n"
+    //header += "Content-Type: " + getMimeType(this->_uri._path.substr(this->_uri._path.find_last_of('.') + 1, this->_uri._path.length())) + CRLF;
+                    + "Last-Modified: " + getLastModified(this->_uri._path) + CRLF + CRLF
+                    + body;
+
+    return (ret);
 }
 
 std::string Request::response(void)
 {
-    std::string header = Cgi(*this).execute();
-    int status = atoi(header.substr(8, 3).c_str());
-
     if (this->_method == "GET")
-        return this->mGet(header, status);
-
-    return header;
+        return (this->genGetBody());
+    return ("wtf");
 }
-
 
 const std::string &Request::getMethod(void) const { return this->_method; }
 const Uri &Request::getUri(void) const { return this->_uri; }

@@ -27,7 +27,6 @@ class Request
         const ServerConfig &getConfig(void) const;
         std::map<std::string, std::string> &getHeaders(void);
 
-        std::string mGet(const std::string &header, const int &status);
     private:
         const ServerConfig &_cfg;
 
@@ -40,4 +39,11 @@ class Request
         void parseFirstLine(std::string &str);
         void parseHeaders(std::vector<std::string> &lines);
         void parseBody(std::vector<std::string> &lines, size_t &i);
+
+        std::string genResponse(std::string header, std::string &body);
+        std::string genGetBody(void);
+
+        std::string readFile(void);
+        
+        
 };

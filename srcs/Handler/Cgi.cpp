@@ -1,6 +1,6 @@
 #include "Cgi.hpp"
 
-// https://www6.uniovi.es/~antonio/ncsa_httpd/cgi/env.html
+// https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 
 Cgi::Cgi(Request &req) : _req(req), _method(req.getMethod()), _uri(req.getUri()), _body(req.getBody()), _headers(req.getHeaders()), _cfg(req.getConfig())
 {
@@ -83,6 +83,7 @@ std::string Cgi::execute(void)
 		char **null = NULL;
 		execve(this->_cfg.getLocation(this->_uri._path).cgi_path.c_str(), null, env);
 		write(1, "Status: 500\r\n\r\n", 15);
+		freeCa(env);
 	}
 	else
 	{
