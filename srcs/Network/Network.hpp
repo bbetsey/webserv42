@@ -15,6 +15,7 @@
 
 #include "Socket.hpp"
 #include "../Config/Config.hpp"
+#include "../Includes/webserv.hpp"
 
 # define BUFFER_READ 4096
 
@@ -64,8 +65,8 @@ typedef struct s_conf {
 
 typedef struct s_udata {
 
+	int					flag;
 	int					is_send;
-	int					listen_socket;
 	struct sockaddr_in	*addr;
 	int					msg_size;
 	int					cur_size;
@@ -87,6 +88,8 @@ class Network {
 		void	send_msg( struct kevent &event );
 
 		void	accept_new_client( int kq, int fd );
+		void	read_socket( int kq, struct kevent &event, t_udata *data );
+		void	write_socket( int kq, struct kevent &event, t_udata *data );
 	
 
 	public:
