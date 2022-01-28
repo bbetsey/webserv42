@@ -37,7 +37,17 @@ Cgi::Cgi(Request &req) : _req(req), _method(req.getMethod()), _uri(req.getUri())
 
 static char **map2ca(std::map<std::string, std::string> &map) // std::map<std::string, std::string> to char array
 {
-	char **ret = new char* [map.size() + 1];
+	char **ret;
+
+	try
+	{
+		ret = new char* [map.size() + 1];
+	}
+	catch (std::exception &e)
+	{
+		std::cout << e.what();
+	}
+
 	int i = 0;
 	std::map<std::string, std::string>::iterator it = map.begin(), ite = map.end();
 

@@ -1,6 +1,6 @@
 #include "../Includes/webserv.hpp"
 #include "Logger.hpp"
-
+#include <stdio.h>
 
 // Logger	*Logger::getInstance( void ) {
 // 	if ( !logger )
@@ -13,6 +13,7 @@ void	Logger::writeLog( std::string log, LogLevel level ) {
     time_t		rawtime;
     char		buf[32];
 
+	fflush(NULL);
     time(&rawtime);
     tm = localtime (&rawtime);
     int ret = strftime(buf, 32, "%T", tm);
@@ -33,4 +34,5 @@ void	Logger::writeLog( std::string log, LogLevel level ) {
 	}
 
 	std::cout << log << RESET << std::endl;
+	fflush(NULL);
 }

@@ -22,8 +22,6 @@ int	Socket::start( void ) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
-	
-
 	errno = 0;
 
 	if ( ( status = getaddrinfo( _host.c_str(), _port.c_str(), &hints, &_res ) ) != 0 ) {

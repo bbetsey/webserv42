@@ -4,10 +4,9 @@
 
 int main(void)
 {
-    std::string getMethod =
-"GET /index.html HTTP/1.1\r\n\
-\r\n";
+	Config conf = Config::getTestConfig();
 
-    ServerConfig cfg;
-    std::cout << Request(getMethod, cfg.getTestConfig()).response();
+	Network	network( conf );
+	network.start();
+
 }

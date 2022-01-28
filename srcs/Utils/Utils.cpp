@@ -1,6 +1,7 @@
 #include "Utils.hpp"
+#include "../Includes/webserv.hpp"
 
-void split(const std::string& str, std::vector<std::string>& tokens, const std::string &delimiters)
+void split(std::string str, std::vector<std::string> &tokens, const std::string delimiters)
 {
 	size_t pos, lastPos = 0, length = str.length();
 

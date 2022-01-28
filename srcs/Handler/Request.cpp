@@ -1,19 +1,26 @@
 #include "Request.hpp"
 
-Request::Request(const std::string &str, const ServerConfig &cfg) : _cfg(cfg)
+Request::Request(std::string str, ServerConfig cfg) : _cfg(cfg)
 {
     std::vector<std::string> lines;
     split(str, lines, "\r\n");
 
-    this->parseFirstLine(lines[0]);
-    this->parseHeaders(lines);
+    try
+    {
+        this->parseFirstLine(lines.at(0));
+        this->parseHeaders(lines);
+    }
+    catch (std::exception &e)
+    {
+        LOG("Looks like we got only one line", ERROR);
+    }
 }
 
 Request::~Request(void)
 {
 }
 
-void Request::parseFirstLine(std::string &line)
+void Request::parseFirstLine(std::string line)
 {
     std::vector<std::string> tokens;
     split(line, tokens, " ");
@@ -26,11 +33,12 @@ void Request::parseFirstLine(std::string &line)
     }
     catch (std::exception &e)
     {
-        std::cout << "Wrong first line! " << e.what() << std::endl; 
+        std::cout << "Wrong first line! " << e.what() << std::endl;
+        LOG("Wrong first line!", ERROR);
     }
 }
 
-void Request::parseHeaders(std::vector<std::string> &lines)
+void Request::parseHeaders(std::vector<std::string> lines)
 {
     size_t i;
     for (i = 1; i < lines.size(); i++)
@@ -43,7 +51,7 @@ void Request::parseHeaders(std::vector<std::string> &lines)
     this->parseBody(lines, i);
 }
 
-void Request::parseBody(std::vector<std::string> &lines, size_t &i)
+void Request::parseBody(std::vector<std::string> lines, size_t i)
 {
     if (lines.size() <= i + 1)
         return;
@@ -73,7 +81,7 @@ std::string Request::genGetBody(void)
     return (this->genResponse(cgiResponse, response));
 }
 
-std::string Request::genResponse(std::string header, std::string &body)
+std::string Request::genResponse(std::string header, std::string body)
 {
     header = header.substr(0, header.length() - 4);
     std::string ret = header + CRLF

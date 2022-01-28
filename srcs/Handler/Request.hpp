@@ -4,6 +4,7 @@
 #include "../Utils/Utils.hpp"
 #include "../Utils/Uri.hpp"
 #include "../Config/Config.hpp"
+#include "../Includes/webserv.hpp"
 
 #include <iostream>
 #include <map>
@@ -16,7 +17,7 @@
 class Request
 {
     public:
-        Request(const std::string &str, const ServerConfig &cfg);
+        Request(std::string str, ServerConfig cfg);
         ~Request(void);
 
         std::string response(void);
@@ -28,7 +29,7 @@ class Request
         std::map<std::string, std::string> &getHeaders(void);
 
     private:
-        const ServerConfig &_cfg;
+        const ServerConfig _cfg;
 
         std::string _method;
         Uri _uri;
@@ -36,11 +37,11 @@ class Request
         std::string _body;
         std::map<std::string, std::string> _headers;
 
-        void parseFirstLine(std::string &str);
-        void parseHeaders(std::vector<std::string> &lines);
-        void parseBody(std::vector<std::string> &lines, size_t &i);
+        void parseFirstLine(std::string str);
+        void parseHeaders(std::vector<std::string> lines);
+        void parseBody(std::vector<std::string> lines, size_t i);
 
-        std::string genResponse(std::string header, std::string &body);
+        std::string genResponse(std::string header, std::string body);
         std::string genGetBody(void);
 
         std::string readFile(void);

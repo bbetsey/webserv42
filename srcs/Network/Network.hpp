@@ -16,6 +16,7 @@
 #include "Socket.hpp"
 #include "../Config/Config.hpp"
 #include "../Includes/webserv.hpp"
+#include "../Handler/Request.hpp"
 
 # define BUFFER_READ 4096
 
@@ -70,6 +71,7 @@ typedef struct s_udata {
 	struct sockaddr_in	*addr;
 	int					msg_size;
 	int					cur_size;
+	std::string			msg;
 
 }						t_udata;
 
@@ -79,13 +81,14 @@ class Network {
 
 		Config	_conf;
 
+		std::string rcvdMsg;
 
 		// MARK: - Private Methods
 
 		void	watch_loop( int kq, struct kevent *kset, int len );
 		int		is_listen_socket( struct kevent *kset, int fd, int len );
-		void	recv_msg( struct kevent &event );
-		void	send_msg( struct kevent &event );
+		void	recv_msg( struct kevent &event, t_udata *data );
+		void	send_msg( struct kevent &event, t_udata *data );
 
 		void	accept_new_client( int kq, int fd );
 		void	read_socket( int kq, struct kevent &event, t_udata *data );

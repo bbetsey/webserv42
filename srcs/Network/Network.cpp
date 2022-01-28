@@ -51,7 +51,7 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 
 // MARK: - RECV, SEND
 
-void	Network::recv_msg( struct kevent &event ) {
+void	Network::recv_msg( struct kevent &event, t_udata *data) {
 	char	buf[ BUFFER_READ ];
 	size_t	read_bytes;
 
@@ -60,17 +60,19 @@ void	Network::recv_msg( struct kevent &event ) {
 	std::cout << "\n========== REQUEST MSG ==========" << std::endl;
 	if ( read_bytes > 0 ) {
 		buf[ read_bytes ] = '\0';
-		std::cout << buf << std::endl;
+		data->msg = buf;
 	}
 }
 
-void	Network::send_msg( struct kevent &event ) {
+void	Network::send_msg( struct kevent &event, t_udata *data ) {
 
-	std::string msg = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\nContent-Length: 48\r\nConnectioin: Closed\r\n\r\n";
-
-	msg += "<html><body><h1>Hello World!</h1></body></html>\r\n";
-
-	send( event.ident, msg.c_str(), msg.length(), 0 );
+	if (data->msg.length() > 0)
+	{
+		LOG("Find first of \\n: " + itos(data->msg.find_first_of('\r')) + " Len: " + itos(data->msg.length()), INFO);
+		std::string msg = Request(data->msg, this->_conf.servers[0]).response();
+		data->msg = "";
+		send( event.ident, msg.c_str(), msg.length(), 0 );
+	}
 }
 
 
@@ -111,7 +113,7 @@ void	Network::read_socket( int kq, struct kevent &event, t_udata *data ) {
 		if ( data->flag ) close( event.ident );
 		else data->flag = 1;
 	} else {
-		recv_msg( event );
+		recv_msg( event, data );
 		data->is_send = 0;
 	}
 
@@ -127,7 +129,7 @@ void	Network::write_socket( int kq, struct kevent &event, t_udata *data ) {
 		else data->flag = 1;
 	} else {
 		if ( data->is_send ) return;
-		send_msg( event );
+		send_msg( event, data );
 		data->is_send = 1;
 	}
 
@@ -147,7 +149,7 @@ int	Network::is_listen_socket( struct kevent *kset, int fd, int len ) {
 
 void	Network::start( void ) {
 	int 			kq;
-	struct kevent	kset[ _conf.servers.size() ];
+	struct kevent	kset[ 1 ];
 
 	kq = kqueue();
 
