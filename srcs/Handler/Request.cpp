@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request(std::string &str, const ServerConfig &cfg) : _cfg(cfg)
+Request::Request(std::string str, ServerConfig cfg) : _cfg(cfg)
 {
     std::vector<std::string> lines;
     split(str, lines, "\r\n");

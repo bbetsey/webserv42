@@ -51,7 +51,7 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 
 // MARK: - RECV, SEND
 
-void	Network::recv_msg( struct kevent &event ) {
+void	Network::recv_msg( struct kevent &event, t_udata *data ) {
 	char	buf[ BUFFER_READ ];
 	size_t	read_bytes;
 
@@ -61,16 +61,26 @@ void	Network::recv_msg( struct kevent &event ) {
 	if ( read_bytes > 0 ) {
 		buf[ read_bytes ] = '\0';
 		std::cout << buf << std::endl;
+		std::string msg = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\nContent-Length: 48\r\nConnectioin: Closed\r\n\r\n";
+		msg += "<html><body><h1>Hello World!</h1></body></html>\r\n";
+		data->response = msg;
+		data->ready = 1;
 	}
 }
 
-void	Network::send_msg( struct kevent &event ) {
+void	Network::send_msg( struct kevent &event, t_udata *data ) {
 
-	std::string msg = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\nContent-Length: 48\r\nConnectioin: Closed\r\n\r\n";
+	if ( data->ready ) {
+		// LOG( "SEND: in:" + data->response, INFO );
+		send( event.ident, data->response.c_str(), data->response.length(), 0 );
+		data->ready = 0;
+	}
 
-	msg += "<html><body><h1>Hello World!</h1></body></html>\r\n";
+	// std::string msg = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\nContent-Length: 48\r\nConnectioin: Closed\r\n\r\n";
 
-	send( event.ident, msg.c_str(), msg.length(), 0 );
+	// msg += "<html><body><h1>Hello World!</h1></body></html>\r\n";
+
+	// send( event.ident, msg.c_str(), msg.length(), 0 );
 }
 
 
@@ -92,6 +102,7 @@ void	Network::accept_new_client( int kq, int fd ) {
 	new_data->is_send = 0;
 	new_data->flag = 0;
 	new_data->addr = &new_addr;
+	new_data->ready = 0;
 
 	EV_SET( &new_event[0], client_fd, EVFILT_READ, EV_ADD, 0, 0, new_data );
 	EV_SET( &new_event[1], client_fd, EVFILT_WRITE, EV_ADD, 0, 0, new_data );
@@ -111,7 +122,7 @@ void	Network::read_socket( int kq, struct kevent &event, t_udata *data ) {
 		if ( data->flag ) close( event.ident );
 		else data->flag = 1;
 	} else {
-		recv_msg( event );
+		recv_msg( event, data );
 		data->is_send = 0;
 	}
 
@@ -127,7 +138,7 @@ void	Network::write_socket( int kq, struct kevent &event, t_udata *data ) {
 		else data->flag = 1;
 	} else {
 		if ( data->is_send ) return;
-		send_msg( event );
+		send_msg( event, data );
 		data->is_send = 1;
 	}
 

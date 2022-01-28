@@ -13,7 +13,7 @@
 class Request
 {
     public:
-        Request(std::string &str, const ServerConfig &cfg);
+        Request(std::string str, ServerConfig cfg);
         ~Request(void);
 
         std::string response(void);
@@ -26,7 +26,7 @@ class Request
 
         
     private:
-        const ServerConfig &_cfg;
+        ServerConfig _cfg;
 
         std::string _method;
         Uri _uri;
