@@ -29,6 +29,8 @@ void Request::parseFirstLine(std::string line)
     {
         this->_method = tokens.at(0);
         this->_uri = Uri(tokens.at(1));
+        if (this->_uri._path == "/")
+            this->_uri._path = "/index.html";
         this->_httpVersion = tokens.at(2);
     }
     catch (std::exception &e)

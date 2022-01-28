@@ -68,9 +68,8 @@ void	Network::send_msg( struct kevent &event, t_udata *data ) {
 
 	if (data->msg.length() > 0)
 	{
-		LOG("Find first of \\n: " + itos(data->msg.find_first_of('\r')) + " Len: " + itos(data->msg.length()), INFO);
 		std::string msg = Request(data->msg, this->_conf.servers[0]).response();
-		data->msg = "";
+		LOG("SEND:\n" + msg, INFO);
 		send( event.ident, msg.c_str(), msg.length(), 0 );
 	}
 }
