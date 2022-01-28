@@ -51,7 +51,7 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 
 // MARK: - RECV, SEND
 
-void	Network::recv_msg( struct kevent &event, t_udata *data ) {
+void	Network::recv_msg( struct kevent &event, t_udata *data) {
 	char	buf[ BUFFER_READ ];
 	size_t	read_bytes;
 
@@ -60,28 +60,55 @@ void	Network::recv_msg( struct kevent &event, t_udata *data ) {
 	std::cout << "\n========== REQUEST MSG ==========" << std::endl;
 	if ( read_bytes > 0 ) {
 		buf[ read_bytes ] = '\0';
-		std::cout << buf << std::endl;
-		std::string msg = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\nContent-Length: 48\r\nConnectioin: Closed\r\n\r\n";
-		msg += "<html><body><h1>Hello World!</h1></body></html>\r\n";
-		data->response = msg;
-		data->ready = 1;
+		data->msg = buf;
 	}
 }
 
 void	Network::send_msg( struct kevent &event, t_udata *data ) {
 
-	if ( data->ready ) {
-		// LOG( "SEND: in:" + data->response, INFO );
-		send( event.ident, data->response.c_str(), data->response.length(), 0 );
-		data->ready = 0;
+	if (data->msg.length() > 0)
+	{
+		std::string msg = Request(data->msg, this->_conf.servers[0]).response();
+		LOG("SEND:\n" + msg, INFO);
+		send( event.ident, msg.c_str(), msg.length(), 0 );
 	}
-
-	// std::string msg = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\nContent-Length: 48\r\nConnectioin: Closed\r\n\r\n";
-
-	// msg += "<html><body><h1>Hello World!</h1></body></html>\r\n";
-
-	// send( event.ident, msg.c_str(), msg.length(), 0 );
 }
+
+// void	Network::recv_msg( struct kevent &event, t_udata *data ) {
+// 	char	buf[ BUFFER_READ ];
+// 	size_t	read_bytes;
+
+// 	read_bytes = recv( event.ident, buf, sizeof( buf ), 0 );
+	
+// 	std::cout << "\n========== REQUEST MSG ==========" << std::endl;
+// 	if ( read_bytes > 0 ) {
+// 		buf[ read_bytes ] = '\0';
+// 		std::cout << buf << std::endl;
+// 		std::string msg = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\nContent-Length: 48\r\nConnectioin: Closed\r\n\r\n";
+// 		msg += "<html><body><h1>Hello World!</h1></body></html>\r\n";
+// 		data->msg = msg;
+// 		LOG( data->msg, INFO );
+// 	}
+
+// }
+
+// void	Network::send_msg( struct kevent &event, t_udata *data ) {
+
+// 	std::cout << "Length: " << data->msg.length() << std::endl;
+
+// 	if ( data->msg.length() > 0 ) {
+// 		LOG( "in send handler", INFO );
+// 		LOG( data->msg, INFO );
+// 		send( event.ident, data->msg.c_str(), data->msg.length(), 0 );
+// 		data->msg = "";
+// 	}
+
+// 	// std::string msg = "HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\nContent-Length: 48\r\nConnectioin: Closed\r\n\r\n";
+
+// 	// msg += "<html><body><h1>Hello World!</h1></body></html>\r\n";
+
+// 	// send( event.ident, msg.c_str(), msg.length(), 0 );
+// }
 
 
 // MARK - Accept, Read, Write
@@ -102,7 +129,6 @@ void	Network::accept_new_client( int kq, int fd ) {
 	new_data->is_send = 0;
 	new_data->flag = 0;
 	new_data->addr = &new_addr;
-	new_data->ready = 0;
 
 	EV_SET( &new_event[0], client_fd, EVFILT_READ, EV_ADD, 0, 0, new_data );
 	EV_SET( &new_event[1], client_fd, EVFILT_WRITE, EV_ADD, 0, 0, new_data );

@@ -26,10 +26,11 @@ typedef struct s_udata {
 	int					flag;
 	int					is_send;
 	struct sockaddr_in	*addr;
+	std::string			msg;
 	int					msg_size;
 	int					cur_size;
-	int					ready;
-	std::string			response;
+	
+	
 
 }						t_udata;
 
