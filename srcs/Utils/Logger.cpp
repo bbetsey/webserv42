@@ -8,7 +8,7 @@
 // 	return logger;
 // }
 
-void	Logger::writeLog( std::string log, LogLevel level ) {
+void	Logger::writeLog( std::string log, LogLevel level, int port ) {
 	struct tm	*tm;
     time_t		rawtime;
     char		buf[32];
@@ -22,13 +22,16 @@ void	Logger::writeLog( std::string log, LogLevel level ) {
 
 	switch ( level ) {
 		case INFO:
-			std::cout << GREEN << "INFO: ";
+			if ( port ) std::cout << GREEN << "INFO:  [port: " << port << "] ";
+			else std::cout << GREEN << "INFO:  ";
 			break;
-		case WARN:
-			std::cout << CYAN << "WARN: ";
+		case DEBUG:
+			if ( port ) std::cout << CYAN << "DEBUG: [port: " << port << "] ";
+			else std::cout << CYAN << "DEBUG: ";
 			break;
 		default:
-			std::cout << RED << "ERROR: ";
+			if ( port ) std::cout << RED << "ERROR: [port: " << port << "] ";
+			else std::cout << RED << "ERROR: ";
 			break;
 	}
 

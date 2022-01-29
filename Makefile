@@ -2,13 +2,19 @@ NAME	=	webserv
 
 SRCS	=	srcs/main.cpp \
 			srcs/Handler/Request.cpp \
-			srcs/Handler/Response.cpp \
+			srcs/Handler/Cgi.cpp \
 			srcs/Utils/Utils.cpp \
 			srcs/Utils/Uri.cpp \
+			srcs/Config/Config.cpp \
+			srcs/Network/Network.cpp \
+			srcs/Network/Socket.cpp \
+			srcs/Utils/Logger.cpp
 
-FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror -fsanitize=address -I/usr/include/kqueue
-LDFLAGS =	-lkqueue
 OBJS	= 	$(SRCS:cpp=o)
+
+OS 		=	macos
+FLAGS	=	-std=c++98 -pedantic -fsanitize=address -Wall -Wextra -Werror $(if $(filter-out Ubuntu,$(OS)),,-I/usr/include/kqueue)
+LDFLAGS =	$(if $(filter-out Ubuntu,$(OS)),,-lkqueue)
 
 all: $(NAME)
 

@@ -18,15 +18,16 @@
 #include "../Includes/webserv.hpp"
 #include "../Handler/Request.hpp"
 
-# define BUFFER_READ 4096
+# define BUFFER_READ	4096
+# define RESPONSE		"HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\nContent-Length: 48\r\nConnectioin: keep-alive\r\n\r\n<html><body><h1>Hello World!</h1></body></html>\r\n"
 
 
 typedef struct s_udata {
 
 	int					flag;
 	int					is_send;
-	struct sockaddr_in	*addr;
 	std::string			msg;
+	struct sockaddr_in	*addr;
 	int					msg_size;
 	int					cur_size;
 	
@@ -49,8 +50,8 @@ class Network {
 		void	send_msg( struct kevent &event, t_udata *data );
 
 		void	accept_new_client( int kq, int fd );
-		void	read_socket( int kq, struct kevent &event, t_udata *data );
-		void	write_socket( int kq, struct kevent &event, t_udata *data );
+		void	read_socket( int kq, struct kevent &event );
+		void	write_socket( int kq, struct kevent &event );
 	
 
 	public:

@@ -7,7 +7,7 @@
 
 // MARK: - Macros
 
-# define LOG( log, level ) Logger::writeLog( log, level )
+# define LOG( log, level, port ) Logger::writeLog( log, level, port )
 
 
 // MARK: - Colors

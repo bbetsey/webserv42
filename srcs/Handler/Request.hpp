@@ -1,12 +1,16 @@
 #pragma once
 
+#include "Cgi.hpp"
 #include "../Utils/Utils.hpp"
 #include "../Utils/Uri.hpp"
 #include "../Config/Config.hpp"
+#include "../Includes/webserv.hpp"
 
 #include <iostream>
 #include <map>
 #include <string>
+#include <sstream>
+#include <fstream>
 
 #define CRLF "\r\n"
 
@@ -24,9 +28,8 @@ class Request
         const ServerConfig &getConfig(void) const;
         std::map<std::string, std::string> &getHeaders(void);
 
-        
     private:
-        ServerConfig _cfg;
+        const ServerConfig _cfg;
 
         std::string _method;
         Uri _uri;
@@ -34,7 +37,14 @@ class Request
         std::string _body;
         std::map<std::string, std::string> _headers;
 
-        void parseFirstLine(std::string &str);
-        void parseHeaders(std::vector<std::string> &lines);
-        void parseBody(std::vector<std::string> &lines, size_t &i);
+        void parseFirstLine(std::string str);
+        void parseHeaders(std::vector<std::string> lines);
+        void parseBody(std::vector<std::string> lines, size_t i);
+
+        std::string genResponse(std::string header, std::string body);
+        std::string genGetBody(void);
+
+        std::string readFile(void);
+        
+        
 };
