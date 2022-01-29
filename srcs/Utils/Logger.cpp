@@ -31,3 +31,8 @@ void	Logger::writeLog( std::string log, LogLevel level, int port ) {
 
 	std::cout << log << RESET << std::endl;
 }
+
+void	Logger::check( int result, std::string error ) {
+	if ( result == -1 )
+		std::cout << RED << "ERROR: " << error << RESET << std::endl;
+}

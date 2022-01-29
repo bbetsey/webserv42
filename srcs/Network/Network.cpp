@@ -69,8 +69,7 @@ void	Network::accept_new_client( int kq, int fd ) {
 	EV_SET( &new_event[0], client_fd, EVFILT_READ, EV_ADD, 0, 0, new_data );
 	EV_SET( &new_event[1], client_fd, EVFILT_WRITE, EV_ADD, 0, 0, new_data );
 
-	if ( kevent( kq, new_event, 2, NULL, 0, NULL ) == -1 )
-		LOG( "can't init new event; accept location", ERROR, 0 );
+	CHECK( kevent( kq, new_event, 2, NULL, 0, NULL ), "kevent: can't init new connection events" );
 
 	LOG( "Connection", INFO, new_data->addr->sin_port );
 
@@ -86,7 +85,7 @@ void	Network::read_socket( int kq, struct kevent &event ) {
 	if ( event.flags & EV_EOF || data->flag ) {
 		LOG( "EOF READ", INFO, data->addr->sin_port );
 		EV_SET( &event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, data );
-		kevent( kq, &event, 1, NULL, 0, NULL );
+		CHECK( kevent( kq, &event, 1, NULL, 0, NULL ), "kevent: can't init EV_DELETE flag for EVFILT_READ filter" );
 		if ( data->flag ) close( event.ident );
 		else data->flag = 1;
 	} else {
@@ -120,7 +119,7 @@ void	Network::write_socket( int kq, struct kevent &event ) {
 	if ( event.flags & EV_EOF || data->flag ) {	
 		LOG( "EOF WRITE", INFO, data->addr->sin_port );
 		EV_SET( &event, event.ident, EVFILT_WRITE, EV_DELETE, 0, 0, data );
-		kevent( kq, &event, 1, NULL, 0, NULL );
+		CHECK( kevent( kq, &event, 1, NULL, 0, NULL ), "kevent: can't init EV_DELETE flag for EVFILT_WRITE filter" );
 		if ( data->flag ) close( event.ident );
 		else data->flag = 1;
 	} else { 
@@ -170,8 +169,7 @@ void	Network::start( void ) {
 			EV_SET( kset + i, socket.get_sock_fd(), EVFILT_READ, EV_ADD, 0, 0, NULL );
 		}
 	}
-	if ( kevent( kq, kset, _conf.servers.size(), NULL, 0, NULL ) == -1 )
-		std::cout << "Network: kevent error" << std::endl;
+	CHECK( kevent( kq, kset, _conf.servers.size(), NULL, 0, NULL ), "kevent: can't init listen sockets events" );
 
 	watch_loop( kq, kset, _conf.servers.size() );
 }

@@ -8,6 +8,7 @@
 // MARK: - Macros
 
 # define LOG( log, level, port ) Logger::writeLog( log, level, port )
+# define CHECK( result, error )	Logger::check( result, error )
 
 
 // MARK: - Colors
