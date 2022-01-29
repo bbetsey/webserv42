@@ -12,7 +12,7 @@ SRCS	=	srcs/main.cpp \
 
 OBJS	= 	$(SRCS:cpp=o)
 
-OS 		=	$(shell lsb_release -si)
+OS 		=	macos
 FLAGS	=	-std=c++98 -pedantic -fsanitize=address -Wall -Wextra -Werror $(if $(filter-out Ubuntu,$(OS)),,-I/usr/include/kqueue)
 LDFLAGS =	$(if $(filter-out Ubuntu,$(OS)),,-lkqueue)
 

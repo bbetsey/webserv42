@@ -93,7 +93,6 @@ std::string Cgi::execute(void)
 		char **null = NULL;
 		execve(this->_cfg.getLocation(this->_uri._path).cgi_path.c_str(), null, env);
 		write(1, "Status: 500\r\n\r\n", 15);
-		freeCa(env);
 	}
 	else
 	{

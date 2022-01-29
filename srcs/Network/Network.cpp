@@ -68,6 +68,7 @@ void	Network::send_msg( struct kevent &event, t_udata *data ) {
 
 	if (data->msg.length() > 0)
 	{
+		LOG( "READ:\n" + data->msg, INFO );
 		std::string msg = Request(data->msg, this->_conf.servers[0]).response();
 		LOG("SEND:\n" + msg, INFO);
 		send( event.ident, msg.c_str(), msg.length(), 0 );
@@ -94,8 +95,8 @@ void	Network::accept_new_client( int kq, int fd ) {
 	new_data->flag = 0;
 	new_data->addr = &new_addr;
 
-	EV_SET( &new_event[0], client_fd, EVFILT_READ, EV_ADD, 0, 0, new_data );
-	EV_SET( &new_event[1], client_fd, EVFILT_WRITE, EV_ADD, 0, 0, new_data );
+	EV_SET( &new_event[0], client_fd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, new_data );
+	EV_SET( &new_event[1], client_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, new_data );
 
 	if ( kevent( kq, new_event, 2, NULL, 0, NULL ) == -1 )
 		std::cout << "Network: kevent add new client" << std::endl;
