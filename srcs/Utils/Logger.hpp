@@ -14,8 +14,6 @@ class Logger {
 
 	public:
 
-		// MARK: - Singleton methods
-
 		static void		writeLog( std::string line, LogLevel level, int port = 0 );
 		static void		check( int result, std::string error );
 

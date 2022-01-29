@@ -43,13 +43,15 @@ class Network {
 		// MARK: - Private Methods
 
 		void	watch_loop( int kq, struct kevent *kset, int len );
-		int		is_listen_socket( struct kevent *kset, int fd, int len );
 		void	recv_msg( struct kevent &event, t_udata *data );
 		void	send_msg( struct kevent &event, t_udata *data );
 
 		void	accept_new_client( int kq, int fd );
 		void	read_socket( int kq, struct kevent &event );
 		void	write_socket( int kq, struct kevent &event );
+
+		int		is_listen_socket( struct kevent *kset, int fd, int len );
+		t_udata	*init_udata( struct sockaddr_in *addr );
 	
 
 	public:
