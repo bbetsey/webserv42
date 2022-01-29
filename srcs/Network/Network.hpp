@@ -30,8 +30,6 @@ typedef struct s_udata {
 	struct sockaddr_in	*addr;
 	int					msg_size;
 	int					cur_size;
-	
-	
 
 }						t_udata;
 

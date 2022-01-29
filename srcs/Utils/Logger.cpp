@@ -2,12 +2,6 @@
 #include "Logger.hpp"
 
 
-// Logger	*Logger::getInstance( void ) {
-// 	if ( !logger )
-// 		logger = new Logger();
-// 	return logger;
-// }
-
 void	Logger::writeLog( std::string log, LogLevel level, int port ) {
 	struct tm	*tm;
     time_t		rawtime;
@@ -22,15 +16,15 @@ void	Logger::writeLog( std::string log, LogLevel level, int port ) {
 
 	switch ( level ) {
 		case INFO:
-			if ( port ) std::cout << GREEN << "INFO:  [port: " << port << "] ";
+			if ( port ) std::cout << GREEN << "INFO:  " << BOLDGREEN << "[port: " << port << "] " << RESET << GREEN;
 			else std::cout << GREEN << "INFO:  ";
 			break;
 		case DEBUG:
-			if ( port ) std::cout << CYAN << "DEBUG: [port: " << port << "] ";
+			if ( port ) std::cout << CYAN << "DEBUG: " << BOLDCYAN << "[port: " << port << "] " << RESET << CYAN;
 			else std::cout << CYAN << "DEBUG: ";
 			break;
 		default:
-			if ( port ) std::cout << RED << "ERROR: [port: " << port << "] ";
+			if ( port ) std::cout << RED << "ERROR: " << BOLDRED << "[port: " << port << "] " << RESET << RED;
 			else std::cout << RED << "ERROR: ";
 			break;
 	}

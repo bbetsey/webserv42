@@ -72,7 +72,7 @@ void	Network::accept_new_client( int kq, int fd ) {
 	if ( kevent( kq, new_event, 2, NULL, 0, NULL ) == -1 )
 		LOG( "can't init new event; accept location", ERROR, 0 );
 
-	LOG( "new connection", INFO, new_data->addr->sin_port );
+	LOG( "Connection", INFO, new_data->addr->sin_port );
 
 }
 
