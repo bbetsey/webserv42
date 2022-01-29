@@ -32,12 +32,12 @@ Location	ServerConfig::getLocation( const std::string &path ) const {
 
 // MARK: - ServerConfig Static Struct Methods
 
-ServerConfig	ServerConfig::getTestConfig( void ) {
+ServerConfig	ServerConfig::getTestConfig( std::string port ) {
 	ServerConfig	srvCfg;
 	Location		loc = Location::getTestConfig();
 
 	srvCfg.host = "localhost";
-	srvCfg.port = "3490";
+	srvCfg.port = port;
 	srvCfg.name = "webserv";
 	srvCfg.locations.push_back( loc );
 
@@ -50,11 +50,12 @@ ServerConfig	ServerConfig::getTestConfig( void ) {
 
 Config	Config::getTestConfig( void ) {
 	Config			cfg;
-	ServerConfig	srvCfg = ServerConfig::getTestConfig();
 
 	cfg.error_page = "";
 	cfg.root = "/";
-	cfg.servers.push_back( srvCfg );
+	cfg.servers.push_back( ServerConfig::getTestConfig( "3490" ) );
+	cfg.servers.push_back( ServerConfig::getTestConfig( "3300" ) );
+	cfg.servers.push_back( ServerConfig::getTestConfig( "3000" ) );
 
 	return cfg;
 }

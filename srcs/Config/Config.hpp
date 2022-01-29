@@ -41,7 +41,7 @@ struct ServerConfig {
 
 	// MARK: - static struct methods
 
-	static ServerConfig	getTestConfig( void );
+	static ServerConfig	getTestConfig( std::string port );
 
 };
 
