@@ -20,8 +20,16 @@ class Parser {
 		
 
 		bool	is_whitespace( char c );
-		void	readerTest( std::vector< std::vector< std::string > > file );
+		void	parse( std::vector< std::vector< std::string > > file );
+		void	fillSingleField( std::string &data, std::vector< std::string > line );
+		void	getLocationConfig( std::vector< Location > &locations, std::vector< std::vector< std::string > > file, int &i );
 
+		ServerConfig	getServerConfig( std::vector< std::vector< std::string > > file, int &i );
+		void			fillErrorPage( std::vector< std::string > line, std::map< int, std::string > error_pages );
+		void			fillRoot( std::vector< std::string > line, std::string &root );
+
+		void	readerTest( std::vector< std::vector< std::string > > file );
+		void	parserTest( const Config &conf );
 	
 	public:
 
