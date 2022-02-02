@@ -5,6 +5,7 @@
 int	main( void ) {
 	Parser	parser( "../../configs/configFile1.file" );
 
-	parser.reader();
+	parser.parse();
+	std::cout << parser.getConfig();
 	return 0;
 }

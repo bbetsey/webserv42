@@ -83,7 +83,6 @@ server {
     location /site
     {
     	autoindex on;
-    	users amVsZG9yYTphZG1pbg== bHRoZXJlc2k6YWRtaW4=;
     	root ../Tester;
     }
 }

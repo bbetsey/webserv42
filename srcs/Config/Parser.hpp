@@ -17,19 +17,21 @@ class Parser {
 		std::string const	path;
 		Config				conf;
 
-		
+
+		std::vector< std::string >	reader( void );
 
 		bool	is_whitespace( char c );
-		void	parse( std::vector< std::vector< std::string > > file );
-		void	fillSingleField( std::string &data, std::vector< std::string > line );
-		void	getLocationConfig( std::vector< Location > &locations, std::vector< std::vector< std::string > > file, int &i );
+		bool	check_key_word( const std::string &word );
 
-		ServerConfig	getServerConfig( std::vector< std::vector< std::string > > file, int &i );
-		void			fillErrorPage( std::vector< std::string > line, std::map< int, std::string > error_pages );
-		void			fillRoot( std::vector< std::string > line, std::string &root );
+		void	getServerConfig( const std::vector< std::string > &file, size_t &i );
+		void	getLocation( std::vector< Location > &locations, const std::vector< std::string > &file, size_t &i );
+		void	getErrorPage( std::map< int, std::string > &error_pages, const std::vector< std::string > &file, size_t &i );
+		void	getSingleField( std::string &data, const std::vector< std::string > &line, size_t &i );
+		void	getMultipleField( std::vector< std::string > &data, const std::vector< std::string > &file, size_t &i );
+		void	getAutoIndex( int &autoindex, const std::vector< std::string > &file, size_t &i );
+		void	getBodySize( int &size, const std::vector< std::string > &file, size_t &i );
 
-		void	readerTest( std::vector< std::vector< std::string > > file );
-		void	parserTest( const Config &conf );
+		void	readerTest( const std::vector< std::string > &file );
 	
 	public:
 
@@ -37,8 +39,7 @@ class Parser {
 		~Parser( void );
 
 		Config	getConfig( void );
-
-		std::vector< std::vector< std::string > > reader( void );
+		void	parse( void );
 
 };
 
