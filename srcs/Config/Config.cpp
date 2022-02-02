@@ -118,20 +118,21 @@ std::ostream	&operator << ( std::ostream &out, const Location &loc ) {
 		out << std::endl;
 	}
 	if ( loc.cgi_path.length() > 0 )
-		out << "cgi_path: " << loc.cgi_path << ";" << std::endl;
+		out << "cgi: " << loc.cgi_path << ";" << std::endl;
 	if ( loc.cgi_ext.length() > 0 )
 		out << "cgi_extension: " << loc.cgi_ext << ";" << std::endl;
 	if ( loc.alias.length() > 0 )
 		out << "alias: " << loc.alias << ";" << std::endl;
 	if ( loc.methods.size() > 0 ) {
-		out << "methods: ";
+		out << "allow: ";
 		std::vector< std::string >::const_iterator	it = loc.methods.begin();
 		for ( ; it != loc.methods.end(); ++it )
 			out << *it << " ";
 		out << std::endl;
 	}
 	if ( loc.autoindex ) out << "autoindex: on" << std::endl;
-	if ( loc.max_body_size ) out << "max_body_size: " << loc.max_body_size << std::endl;
+	else out << "autoindex: off" << std::endl;
+	if ( loc.max_body_size != -1 ) out << "max_body_size: " << loc.max_body_size << std::endl;
 	if ( loc.locations.size() > 0 ) {
 		std::vector< Location >::const_iterator	it = loc.locations.begin();
 		for ( ; it != loc.locations.end(); ++it )
