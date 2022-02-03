@@ -80,13 +80,13 @@ std::string Request::genGetBody(void)
     else
         response = "<!DOCTYPE html>\n<html><title>Ooops</title><body><h1>Look like your request was an error. Or ur life?</h1></body></html>\n";
 
-    return (this->genResponse(cgiResponse, response));
+    return (this->genResponse(cgiResponse, response, status));
 }
 
-std::string Request::genResponse(std::string header, std::string body)
+std::string Request::genResponse(std::string header, std::string body, int &status)
 {
     header = header.substr(0, header.length() - 4);
-    std::string ret = header + CRLF
+    std::string ret = "HTTP/1.1 " + itos(status) + " OK" + CRLF
                     + "Content-Length: " + itos(body.length()) + CRLF
                     + "Date: " + getDate() + CRLF
                     + "Server: webserv/0.1\r\n"

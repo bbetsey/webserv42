@@ -41,10 +41,10 @@ class Request
         void parseHeaders(std::vector<std::string> lines);
         void parseBody(std::vector<std::string> lines, size_t i);
 
-        std::string genResponse(std::string header, std::string body);
+        std::string genResponse(std::string header, std::string body, int &status);
         std::string genGetBody(void);
 
         std::string readFile(void);
-        
-        
+
+
 };
