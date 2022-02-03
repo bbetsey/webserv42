@@ -27,6 +27,8 @@ typedef struct s_udata {
 	int					flag;
 	Request				*req;
 	struct sockaddr_in	*addr;
+	std::string			host;
+	std::string			port;
 
 }						t_udata;
 
@@ -43,12 +45,12 @@ class Network {
 		void	recv_msg( struct kevent &event, t_udata *data );
 		void	send_msg( struct kevent &event, t_udata *data );
 
-		void	accept_new_client( int kq, int fd );
+		void	accept_new_client( int kq, struct kevent &event );
 		void	read_socket( int kq, struct kevent &event );
 		void	write_socket( int kq, struct kevent &event );
 
 		int		is_listen_socket( struct kevent *kset, int fd, int len );
-		t_udata	*init_udata( struct sockaddr_in *addr );
+		t_udata	*init_udata( struct sockaddr_in *addr, std::string host, std::string port );
 	
 
 	public:

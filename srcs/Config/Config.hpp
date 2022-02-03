@@ -58,6 +58,8 @@ struct Config {
 	std::vector< ServerConfig >		servers;
 	std::map< int, std::string >	error_pages;
 	std::string						root;
+	std::string						index;
+	int								autoindex;
 
 
 	// MARK: - Static Struct Methods
