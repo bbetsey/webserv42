@@ -27,9 +27,8 @@ typedef struct s_udata {
 	int					flag;
 	int					is_send;
 	std::string			msg;
+	Request				*req;
 	struct sockaddr_in	*addr;
-	int					msg_size;
-	int					cur_size;
 
 }						t_udata;
 

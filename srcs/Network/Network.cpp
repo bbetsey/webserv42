@@ -104,6 +104,7 @@ void	Network::recv_msg( struct kevent &event, t_udata *data ) {
 	if ( read_bytes > 0 ) {
 		buf[ read_bytes ] = '\0';
 		data->msg = std::string( buf );
+		LOG( "Read: " + std::to_string( read_bytes ) + "b\n", INFO, data->addr->sin_port );
 		LOG( "Request:\n" + data->msg, DEBUG, data->addr->sin_port );
 	}
 
@@ -142,6 +143,7 @@ void	Network::send_msg( struct kevent &event, t_udata *data ) {
 
 		send( event.ident, msg.c_str(), msg.length(), 0 );
 		data->is_send = 1;
+		LOG( "Write: " + std::to_string( msg.length() ) + "b\n", INFO, data->addr->sin_port );
 		LOG( "Response:\n" + msg, DEBUG, data->addr->sin_port );
 	}
 }
@@ -157,7 +159,7 @@ int	Network::is_listen_socket( struct kevent *kset, int fd, int len ) {
 
 t_udata	*Network::init_udata( struct sockaddr_in *addr ) {
 	t_udata				*udata = new t_udata;
-				
+
 	udata->is_send = 0;
 	udata->flag = 0;
 	udata->addr = addr;
