@@ -22,58 +22,11 @@
 # define RESPONSE		"HTTP/1.1 200 OK\r\nServer: webserv\r\nContent-Type: text/html\r\nContent-Length: 48\r\nConnectioin: keep-alive\r\n\r\n<html><body><h1>Hello World!</h1></body></html>\r\n"
 
 
-enum Method {
-	GET,
-	POST,
-	DELETE
-};
-
-
-typedef struct s_location {
-
-	std::string							uri;
-	std::string							root;
-	std::string							index;
-	std::string							cgi_path;
-	std::string							cgi_ext;
-	std::string							alias;
-	std::vector< Method >				methods;
-	int									autoindex;
-	int									max_body_size;
-	std::vector< struct s_location >	locations;
-
-}										t_location;
-
-
-typedef struct s_server {
-
-	std::string					host;
-	std::string					name;
-	std::string					port;
-	std::string					error_page;
-	std::vector< t_location >	locations;
-
-}								t_server;
-
-
-typedef struct s_conf {
-
-	std::vector< s_server >		servers;
-	std::string					error_page;
-	std::string					root;
-
-}								t_conf;
-
-
 typedef struct s_udata {
 
 	int					flag;
-	int					is_send;
-	std::string			msg;
 	Request				*req;
 	struct sockaddr_in	*addr;
-	int					msg_size;
-	int					cur_size;
 
 }						t_udata;
 
@@ -83,7 +36,6 @@ class Network {
 
 		Config	_conf;
 
-		std::string rcvdMsg;
 
 		// MARK: - Private Methods
 
@@ -97,7 +49,7 @@ class Network {
 
 		int		is_listen_socket( struct kevent *kset, int fd, int len );
 		t_udata	*init_udata( struct sockaddr_in *addr );
-
+	
 
 	public:
 

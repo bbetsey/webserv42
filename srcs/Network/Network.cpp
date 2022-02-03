@@ -28,16 +28,16 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 		if ( new_events < 1 && errno == EINTR ) {
 			LOG( "kevent new events error", ERROR, 0 );
 			break;
-		}
+		} 
 
 		for ( int i = 0; i < new_events; ++i ) {
 
 			if ( is_listen_socket( kset, events[i].ident, len ) )
 				accept_new_client( kq, events[i].ident );
 
-			else if ( events[i].filter == EVFILT_READ )
+			else if ( events[i].filter == EVFILT_READ )	
 				read_socket( kq, events[i] );
-
+			
 			else if ( events[i].filter == EVFILT_WRITE )
 				write_socket( kq, events[i] );
 		}
@@ -53,7 +53,7 @@ void	Network::accept_new_client( int kq, int fd ) {
 	struct sockaddr_in	*new_addr = new sockaddr_in;
 	socklen_t			socklen = sizeof( new_addr );
 	int 				client_fd;
-
+	
 	client_fd = accept( fd, ( struct sockaddr * )new_addr, &socklen );
 
 	int opt = 1;
@@ -83,14 +83,13 @@ void	Network::read_socket( int kq, struct kevent &event ) {
 		LOG( "EOF READ", INFO, data->addr->sin_port );
 		EV_SET( &event, event.ident, EVFILT_READ, EV_DELETE, 0, 0, data );
 		CHECK( kevent( kq, &event, 1, NULL, 0, NULL ), "kevent: can't init EV_DELETE flag for EVFILT_READ filter" );
-
+		
 		if ( data->flag )
 			close( event.ident );
 		else data->flag = 1;
 
 	} else {
 		recv_msg( event, data );
-		data->is_send = 0;
 	}
 
 }
@@ -103,9 +102,11 @@ void	Network::recv_msg( struct kevent &event, t_udata *data ) {
 
 	if ( read_bytes > 0 ) {
 		buf[ read_bytes ] = '\0';
-		data->msg = std::string( buf );
+
+		data->req->add_msg( buf );						// Добавляю полученный запрос
+
 		LOG( "Read: " + std::to_string( read_bytes ) + "b\n", INFO, data->addr->sin_port );
-		LOG( "Request:\n" + data->msg, DEBUG, data->addr->sin_port );
+		LOG( "Request:\n" + std::string( buf ), DEBUG, data->addr->sin_port );
 	}
 
 }
@@ -117,35 +118,33 @@ void	Network::write_socket( int kq, struct kevent &event ) {
 
 	t_udata	*data = ( t_udata * )(event.udata);
 
-	if ( event.flags & EV_EOF || data->flag ) {
-
+	if ( event.flags & EV_EOF || data->flag ) {	
+		
 		LOG( "EOF WRITE", INFO, data->addr->sin_port );
 		EV_SET( &event, event.ident, EVFILT_WRITE, EV_DELETE, 0, 0, data );
 		CHECK( kevent( kq, &event, 1, NULL, 0, NULL ), "kevent: can't init EV_DELETE flag for EVFILT_WRITE filter" );
-
+		
 		if ( data->flag )
 			close( event.ident );
 		else data->flag = 1;
+		
+	} else { 
 
-	} else {
-		if ( data->is_send ) return;
+		if ( !data->req->isReady() ) return;			// Спрашиваю готов ли ответ
 		send_msg( event, data );
-		data->is_send = 1;
+
 	}
 
 }
 
 void	Network::send_msg( struct kevent &event, t_udata *data ) {
 
-	if ( data->msg.length() > 0 ) {
+	std::string response = data->req->getResponse();	// Получаю ответ для отправки
 
-		std::string msg = Request( data->msg, _conf.servers[0] ).response();
+	send( event.ident, response, response.length(), 0 );
+	LOG( "Write: " + std::to_string( response ) + "b\n", INFO, data->addr->sin_port );
+	LOG( "Response:\n" + msg, DEBUG, data->addr->sin_port );
 
-		send( event.ident, msg.c_str(), msg.length(), 0 );
-		data->is_send = 1;
-		LOG( "Write: " + std::to_string( msg.length() ) + "b\n", INFO, data->addr->sin_port );
-		LOG( "Response:\n" + msg, DEBUG, data->addr->sin_port );
-	}
 }
 
 
@@ -160,9 +159,9 @@ int	Network::is_listen_socket( struct kevent *kset, int fd, int len ) {
 t_udata	*Network::init_udata( struct sockaddr_in *addr ) {
 	t_udata				*udata = new t_udata;
 
-	udata->is_send = 0;
 	udata->flag = 0;
 	udata->addr = addr;
+	udata->req = new Request( _conf );					// Инициализирую Request( conf )
 	return udata;
 }
 
