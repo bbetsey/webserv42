@@ -1,12 +1,13 @@
 #include "../Includes/webserv.hpp"
 #include "Logger.hpp"
-
+#include <stdio.h>
 
 void	Logger::writeLog( std::string log, LogLevel level, int port ) {
 	struct tm	*tm;
     time_t		rawtime;
     char		buf[32];
 
+	fflush(NULL);
     time(&rawtime);
     tm = localtime (&rawtime);
     int ret = strftime(buf, 32, "%T", tm);
@@ -30,6 +31,7 @@ void	Logger::writeLog( std::string log, LogLevel level, int port ) {
 	}
 
 	std::cout << log << RESET << std::endl;
+	fflush(NULL);
 }
 
 void	Logger::check( int result, std::string error ) {
