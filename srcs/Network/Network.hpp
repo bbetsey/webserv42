@@ -74,7 +74,6 @@ typedef struct s_udata {
 	struct sockaddr_in	*addr;
 	int					msg_size;
 	int					cur_size;
-	std::string			msg;
 
 }						t_udata;
 
@@ -89,7 +88,6 @@ class Network {
 		// MARK: - Private Methods
 
 		void	watch_loop( int kq, struct kevent *kset, int len );
-		int		is_listen_socket( struct kevent *kset, int fd, int len );
 		void	recv_msg( struct kevent &event, t_udata *data );
 		void	send_msg( struct kevent &event, t_udata *data );
 

@@ -12,11 +12,7 @@ Request::Request(std::string str, ServerConfig cfg) : _cfg(cfg)
     }
     catch (std::exception &e)
     {
-<<<<<<< HEAD
         LOG("Looks like we got only one line", ERROR, 0);
-=======
-        LOG("Looks like we got only one line", ERROR);
->>>>>>> origin
     }
 }
 
@@ -40,11 +36,7 @@ void Request::parseFirstLine(std::string line)
     catch (std::exception &e)
     {
         std::cout << "Wrong first line! " << e.what() << std::endl;
-<<<<<<< HEAD
         LOG("Wrong first line!", ERROR, 0);
-=======
-        LOG("Wrong first line!", ERROR);
->>>>>>> origin
     }
 }
 
