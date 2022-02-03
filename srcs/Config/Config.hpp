@@ -2,13 +2,16 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
+
+#include "../Includes/webserv.hpp"
 
 
 struct Location {
 
 	std::string					path;
 	std::string					root;
-	std::string					index;
+	std::vector< std::string >	index;
 	std::string					cgi_path;
 	std::string					cgi_ext;
 	std::string					alias;
@@ -22,16 +25,18 @@ struct Location {
 
 	static Location	getTestConfig( void );
 
+	friend std::ostream	&operator << ( std::ostream &out, const Location &loc );
+
 };
 
 
 struct ServerConfig {
 	
-	std::string					host;
-	std::string					name;
-	std::string					port;
-	std::string					error_page;
-	std::vector<Location>		locations;
+	std::string						host;
+	std::string						name;
+	std::string						port;
+	std::map< int, std::string >	error_pages;
+	std::vector<Location>			locations;
 
 
 	// MARK: - struct methods
@@ -41,20 +46,24 @@ struct ServerConfig {
 
 	// MARK: - static struct methods
 
-	static ServerConfig	getTestConfig( void );
+	static ServerConfig	getTestConfig( std::string port );
+
+	friend std::ostream	&operator << ( std::ostream &out, const ServerConfig &conf );
 
 };
 
 
 struct Config {
 
-	std::vector< ServerConfig >	servers;
-	std::string					error_page;
-	std::string					root;
+	std::vector< ServerConfig >		servers;
+	std::map< int, std::string >	error_pages;
+	std::string						root;
 
 
 	// MARK: - Static Struct Methods
 
 	static Config	getTestConfig( void );
+
+	friend std::ostream	&operator << ( std::ostream &out, const Config &conf );
 
 };

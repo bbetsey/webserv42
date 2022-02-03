@@ -2,13 +2,7 @@
 #include "Logger.hpp"
 #include <stdio.h>
 
-// Logger	*Logger::getInstance( void ) {
-// 	if ( !logger )
-// 		logger = new Logger();
-// 	return logger;
-// }
-
-void	Logger::writeLog( std::string log, LogLevel level ) {
+void	Logger::writeLog( std::string log, LogLevel level, int port ) {
 	struct tm	*tm;
     time_t		rawtime;
     char		buf[32];
@@ -23,16 +17,24 @@ void	Logger::writeLog( std::string log, LogLevel level ) {
 
 	switch ( level ) {
 		case INFO:
-			std::cout << GREEN << "INFO: ";
+			if ( port ) std::cout << GREEN << "INFO:  " << BOLDGREEN << "[port: " << port << "] " << RESET << GREEN;
+			else std::cout << GREEN << "INFO:  ";
 			break;
-		case WARN:
-			std::cout << CYAN << "WARN: ";
+		case DEBUG:
+			if ( port ) std::cout << CYAN << "DEBUG: " << BOLDCYAN << "[port: " << port << "] " << RESET << CYAN;
+			else std::cout << CYAN << "DEBUG: ";
 			break;
 		default:
-			std::cout << RED << "ERROR: ";
+			if ( port ) std::cout << RED << "ERROR: " << BOLDRED << "[port: " << port << "] " << RESET << RED;
+			else std::cout << RED << "ERROR: ";
 			break;
 	}
 
 	std::cout << log << RESET << std::endl;
 	fflush(NULL);
+}
+
+void	Logger::check( int result, std::string error ) {
+	if ( result == -1 )
+		std::cout << RED << "ERROR: " << error << RESET << std::endl;
 }

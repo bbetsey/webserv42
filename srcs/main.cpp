@@ -1,12 +1,13 @@
 #include "Network/Network.hpp"
 #include "Config/Config.hpp"
+#include "Config/Parser.hpp"
 #include "Handler/Request.hpp"
 
-int main(void)
+int main( void )
 {
-	Config conf = Config::getTestConfig();
+    Parser  parser( "configs/configFile1.file" );
+    parser.parse();
 
-	Network	network( conf );
-	network.start();
-
+    Network network( parser.getConfig() );
+    network.start();
 }

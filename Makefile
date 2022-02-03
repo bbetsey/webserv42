@@ -6,6 +6,7 @@ SRCS	=	srcs/main.cpp \
 			srcs/Utils/Utils.cpp \
 			srcs/Utils/Uri.cpp \
 			srcs/Config/Config.cpp \
+			srcs/Config/Parser.cpp \
 			srcs/Network/Network.cpp \
 			srcs/Network/Socket.cpp \
 			srcs/Utils/Logger.cpp
