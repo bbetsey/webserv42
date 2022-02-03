@@ -139,7 +139,7 @@ void	Network::send_msg( struct kevent &event, t_udata *data ) {
 
 	if ( data->msg.length() > 0 ) {
 
-		std::string msg = RESPONSE;
+		std::string msg = Request( data->msg, _conf.servers[0] ).response();
 
 		send( event.ident, msg.c_str(), msg.length(), 0 );
 		data->is_send = 1;
