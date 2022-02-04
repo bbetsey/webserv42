@@ -31,6 +31,10 @@ class Parser {
 		void	getAutoIndex( int &autoindex, const std::vector< std::string > &file, size_t &i );
 		void	getBodySize( int &size, const std::vector< std::string > &file, size_t &i );
 
+		void	inherit( void );
+		void	inherit( ServerConfig &server );
+		void	inherit( Location &loc );
+
 		void	readerTest( const std::vector< std::string > &file );
 	
 	public:

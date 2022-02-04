@@ -78,7 +78,8 @@ std::ostream	&operator << ( std::ostream &out, const Config &conf ) {
 		for ( ; it != conf.error_pages.end(); ++it )
 			out << "error_page " << it->first << " " << it->second << ";" << std::endl;
 	}
-	if ( conf.autoindex ) out << "autoindex: on" << std::endl;
+	if ( conf.autoindex > 0 ) out << "autoindex: on" << std::endl;
+	if ( conf.max_body_size > 0 ) out << "max_body_size: " << conf.max_body_size << std::endl;
 	if ( conf.servers.size() > 0 ) {
 		std::vector< ServerConfig >::const_iterator	it = conf.servers.begin();
 		for ( ; it != conf.servers.end(); ++it )
@@ -92,6 +93,8 @@ std::ostream	&operator << ( std::ostream &out, const ServerConfig &conf ) {
 	out << BOLDWHITE << "\nSERVER" << RESET << std::endl;
 	if ( conf.host.length() > 0 )
 		out << "host: " << conf.host << ";" << std::endl;
+	if ( conf.root.length() > 0 )
+		out << "root: " << conf.root << ";" << std::endl;
 	if ( conf.port.length() > 0 )
 		out << "port: " << conf.port << ";" << std::endl;
 	if ( conf.name.length() > 0 )
@@ -100,6 +103,15 @@ std::ostream	&operator << ( std::ostream &out, const ServerConfig &conf ) {
 		std::map< int, std::string >::const_iterator	it = conf.error_pages.begin();
 		for ( ; it != conf.error_pages.end(); ++it )
 			out << "error_page " << it->first << " " << it->second << ";" << std::endl;
+	}
+	if ( conf.autoindex > 0 ) out << "autoindex: on" << std::endl;
+	if ( conf.max_body_size > 0 ) out << "max_body_size: " << conf.max_body_size << std::endl;
+	if ( conf.index.size() > 0 ) {
+		out << "index: ";
+		std::vector< std::string >::const_iterator	it = conf.index.begin();
+		for ( ; it != conf.index.end(); ++it )
+			out << *it << " ";
+		out << std::endl;
 	}
 	if ( conf.locations.size() > 0 ) {
 		std::vector< Location >::const_iterator	it = conf.locations.begin();
@@ -138,9 +150,13 @@ std::ostream	&operator << ( std::ostream &out, const Location &loc ) {
 			out << *it << " ";
 		out << std::endl;
 	}
-	if ( loc.autoindex ) out << "autoindex: on" << std::endl;
-	else out << "autoindex: off" << std::endl;
-	if ( loc.max_body_size != -1 ) out << "max_body_size: " << loc.max_body_size << std::endl;
+	if ( loc.autoindex > 0 ) out << "autoindex: on" << std::endl;
+	if ( loc.max_body_size > 0 ) out << "max_body_size: " << loc.max_body_size << std::endl;
+	if ( loc.error_pages.size() > 0 ) {
+		std::map< int, std::string >::const_iterator	it = loc.error_pages.begin();
+		for ( ; it != loc.error_pages.end(); ++it )
+			out << "error_page " << it->first << " " << it->second << ";" << std::endl;
+	}
 	if ( loc.locations.size() > 0 ) {
 		std::vector< Location >::const_iterator	it = loc.locations.begin();
 		for ( ; it != loc.locations.end(); ++it )

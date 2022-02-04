@@ -9,16 +9,17 @@
 
 struct Location {
 
-	std::string					path;
-	std::string					root;
-	std::vector< std::string >	index;
-	std::string					cgi_path;
-	std::string					cgi_ext;
-	std::string					alias;
-	std::vector< std::string >	methods;
-	std::vector< Location >		locations;
-	int							autoindex;
-	int							max_body_size;
+	std::string						path;
+	std::string						root;
+	std::vector< std::string >		index;
+	std::string						cgi_path;
+	std::string						cgi_ext;
+	std::string						alias;
+	std::vector< std::string >		methods;
+	std::map< int, std::string >	error_pages;
+	std::vector< Location >			locations;
+	int								autoindex;
+	int								max_body_size;
 
 
 	// MARK: - Static Struct Methods
@@ -35,8 +36,12 @@ struct ServerConfig {
 	std::string						host;
 	std::string						name;
 	std::string						port;
+	std::string						root;
+	std::vector< std::string >		index;
 	std::map< int, std::string >	error_pages;
 	std::vector< Location >			locations;
+	int								autoindex;
+	int								max_body_size;
 
 
 	// MARK: - struct methods
@@ -60,7 +65,7 @@ struct Config {
 	std::string						root;
 	std::vector< std::string >		index;
 	int								autoindex;
-
+	int								max_body_size;
 
 	// MARK: - Static Struct Methods
 

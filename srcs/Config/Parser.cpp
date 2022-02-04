@@ -19,6 +19,9 @@ Config	Parser::getConfig( void ) {
 
 void	Parser::parse( void ) {
 	std::vector< std::string >	file = reader();
+
+	conf.autoindex = -1;
+	conf.max_body_size = -1;
 	
 	for ( size_t i = 0; i != file.size(); ++i ) {
 		if ( file[i] == "server" || file[i] == "?server" )
@@ -32,7 +35,7 @@ void	Parser::parse( void ) {
 		else if ( file[i] == "autoindex" )
 			getAutoIndex( conf.autoindex, file, i );
 	}
-
+	inherit();
 }
 
 
@@ -77,6 +80,9 @@ std::vector< std::string >	Parser::reader( void ) {
 void	Parser::getServerConfig( const std::vector< std::string > &file, size_t &i ) {
 	ServerConfig	svr_conf;
 
+	svr_conf.autoindex = -1;
+	svr_conf.max_body_size = -1;
+
 	if ( file[++i] != "{" ) {
 		LOG( "parser: wrong config", ERROR, 0 );
 		exit( 0 );
@@ -89,6 +95,14 @@ void	Parser::getServerConfig( const std::vector< std::string > &file, size_t &i 
 			getSingleField( svr_conf.port, file, i );
 		else if ( file[i] == "server_name" )
 			getSingleField( svr_conf.name, file, i );
+		else if ( file[i] == "root" )
+			getSingleField( svr_conf.root, file, i );
+		else if ( file[i] == "index" )
+			getMultipleField( svr_conf.index, file, i );
+		else if ( file[i] == "autoindex" )
+			getAutoIndex( svr_conf.autoindex, file, i );
+		else if ( file[i] == "max_body_size" )
+			getBodySize( svr_conf.max_body_size, file, i );
 		else if ( file[i] == "error_page" )
 			getErrorPage( svr_conf.error_pages, file, i );
 		else if ( file[i] == "location" )
@@ -104,8 +118,8 @@ void	Parser::getServerConfig( const std::vector< std::string > &file, size_t &i 
 void	Parser::getLocation( std::vector< Location > &locations, const std::vector< std::string > &file, size_t &i ) {
 	Location	loc;
 
+	loc.autoindex = -1;
 	loc.max_body_size = -1;
-	loc.autoindex = 0;
 
 	for ( ++i; file[i] != "{"; ++i )
 		loc.path += file[i];
@@ -194,6 +208,76 @@ void	Parser::getBodySize( int &size, const std::vector< std::string > &file, siz
 		}
 	} catch ( std::exception ) {
 		return;
+	}
+}
+
+void	Parser::inherit( void ) {
+	std::vector< ServerConfig >::iterator	it = conf.servers.begin();
+	for ( ; it != conf.servers.end(); ++it ) {
+		if ( conf.error_pages.size() > 0 ) {
+			std::map< int, std::string >::iterator itconf = conf.error_pages.begin();
+			for ( ; itconf != conf.error_pages.end(); ++itconf )
+				it->error_pages[itconf->first] = itconf->second;
+		}
+		if ( it->root.length() == 0 && conf.root.length() > 0 )
+			it->root = conf.root;
+		if ( it->autoindex == -1 && conf.autoindex != -1 )
+			it->autoindex = conf.autoindex;
+		if ( it->max_body_size == -1 && conf.max_body_size != -1 )
+			it->max_body_size = conf.max_body_size;
+		if ( it->index.size() == 0 && conf.index.size() > 0 )
+			it->index = conf.index;
+		inherit( *it );
+	}
+}
+
+void	Parser::inherit( ServerConfig &server ) {
+	std::vector< Location >::iterator it = server.locations.begin();
+	for ( ; it != server.locations.end(); ++it ) {
+		if ( it->root.length() == 0 && server.root.length() > 0 )
+			it->root = server.root;
+		if ( server.error_pages.size() > 0 ) {
+			std::map< int, std::string >::iterator itsvr = server.error_pages.begin();
+			for ( ; itsvr != server.error_pages.end(); ++itsvr )
+				it->error_pages[itsvr->first] = itsvr->second;
+		}
+		if ( it->autoindex == -1 && server.autoindex != -1 )
+			it->autoindex = server.autoindex;
+		if ( it->max_body_size == -1 && server.max_body_size != -1 )
+			it->max_body_size = server.max_body_size;
+		if ( it->index.size() == 0 && server.index.size() > 0 )
+			it->index = server.index;
+		if ( it->locations.size() > 0 )
+			inherit( *it );
+	}
+}
+
+void	Parser::inherit( Location &loc ) {
+	std::vector< Location >::iterator it = loc.locations.begin();
+	for ( ; it != loc.locations.end(); ++it ) {
+		if ( it->root.length() == 0 && loc.root.length() > 0 )
+			it->root = loc.root;
+		if ( it->index.size() == 0 && loc.index.size() > 0 )
+			it->index = loc.index;
+		if ( it->methods.size() == 0 && loc.methods.size() > 0 )
+			it->methods = loc.methods;
+		if ( it->autoindex == -1 && loc.autoindex != -1 )
+			it->autoindex = loc.autoindex;
+		if ( it->max_body_size == -1 && loc.max_body_size != -1 )
+			it->max_body_size = loc.max_body_size;
+		if ( it->cgi_path.length() == 0 && loc.cgi_path.length() > 0 )
+			it->cgi_path = loc.cgi_path;
+		if ( it->cgi_ext.length() == 0 && loc.cgi_ext.length() > 0 )
+			it->cgi_ext = loc.cgi_ext;
+		if ( it->alias.length() == 0 && loc.alias.length() > 0 )
+			it->alias = loc.alias;
+		if ( loc.error_pages.size() > 0 ) {
+			std::map< int, std::string >::iterator itconf = loc.error_pages.begin();
+			for ( ; itconf != loc.error_pages.end(); ++itconf )
+				it->error_pages[itconf->first] = itconf->second;
+		}
+		if ( it->locations.size() > 0 )
+			inherit( *it );
 	}
 }
 
