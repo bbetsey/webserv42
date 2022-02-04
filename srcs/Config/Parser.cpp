@@ -160,6 +160,13 @@ void	Parser::getSingleField( std::string &data, const std::vector< std::string >
 	}
 }
 
+static bool isParam (std::string line)
+{
+    if (line.length() > 0 && isdigit(atoi(line.c_str())))
+        return true;
+    return false;
+}
+
 void	Parser::getErrorPage( std::map< int, std::string > &error_pages, const std::vector< std::string > &file, size_t &i ) {
 	++i;
 
@@ -167,15 +174,13 @@ void	Parser::getErrorPage( std::map< int, std::string > &error_pages, const std:
 	while ( file[j] != ";" && !check_key_word( file[j] ) )
 		++j;
 	std::string path = file[--j];
-	int			key;
 
-	while ( 1 ) {
-		try {
-			key = std::stoi( file[i++] );
-			error_pages[key] = path;
-		} catch ( std::exception ) {
+	while ( 1 )
+	{
+		if (isParam(file[i]))
+			error_pages[std::atoi(file[i++].c_str())] = path;
+		else
 			break;
-		}
 	}
 }
 
@@ -203,7 +208,7 @@ void	Parser::getBodySize( int &size, const std::vector< std::string > &file, siz
 
 	++i;
 	try {
-		size = std::stoi( file[i] );
+		size = atoi( file[i].c_str() );
 		if ( file[++i] != ";" ) {
 			LOG( "parser: wrong config", ERROR, 0 );
 			exit( 0 );

@@ -13,9 +13,9 @@ SRCS	=	srcs/main.cpp \
 
 OBJS	= 	$(SRCS:cpp=o)
 
-OS 		=	macos
-FLAGS	=	-std=c++98 -pedantic -fsanitize=address -Wall -Wextra -Werror $(if $(filter-out Ubuntu,$(OS)),,-I/usr/include/kqueue)
-LDFLAGS =	$(if $(filter-out Ubuntu,$(OS)),,-lkqueue)
+OS 		=	$(uname)
+FLAGS	=	-std=c++98 -pedantic -fsanitize=address -Wall -Wextra -Werror $(if $(filter-out Linux,$(OS)),,-I/usr/include/kqueue)
+LDFLAGS =	$(if $(filter-out Linux,$(OS)),,-lkqueue)
 
 all: $(NAME)
 

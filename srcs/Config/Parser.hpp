@@ -5,8 +5,8 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include "Config.hpp"
-#include "../Includes/webserv.hpp"
 #include "../Includes/webserv.hpp"
 
 

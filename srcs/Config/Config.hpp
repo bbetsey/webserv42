@@ -71,6 +71,14 @@ struct Config {
 
 	static Config	getTestConfig( void );
 
+	ServerConfig getServerConf(std::string &host, std::string &port)
+	{
+		for (size_t i = 0; i < servers.size(); i++)
+			if (host == this->servers[i].host && port == this->servers[i].port)
+				return (this->servers[i]);
+		return (this->servers[0]);
+	}
+
 	friend std::ostream	&operator << ( std::ostream &out, const Config &conf );
 
 };

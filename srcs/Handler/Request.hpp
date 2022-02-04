@@ -17,10 +17,12 @@
 class Request
 {
     public:
-        Request(std::string str, ServerConfig cfg);
+        Request(const ServerConfig &cfg);
         ~Request(void);
 
-        std::string response(void);
+        std::string getResponse(void);
+        void add_msg(const std::string &msg);
+        bool isReady(void) const;
 
         const std::string &getMethod(void) const;
         const Uri &getUri(void) const;
@@ -29,7 +31,7 @@ class Request
         std::map<std::string, std::string> &getHeaders(void);
 
     private:
-        const ServerConfig _cfg;
+        const ServerConfig &_cfg;
 
         std::string _method;
         Uri _uri;
@@ -41,10 +43,6 @@ class Request
         void parseHeaders(std::vector<std::string> lines);
         void parseBody(std::vector<std::string> lines, size_t i);
 
-        std::string genResponse(std::string header, std::string body, int &status);
-        std::string genGetBody(void);
-
         std::string readFile(void);
-
 
 };

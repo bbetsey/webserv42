@@ -3,7 +3,7 @@
 
 
 int	main( void ) {
-	Parser	parser( "../../configs/configFile1.file" );
+	Parser	parser( "../../test_ubuntu/configFile1.file" );
 
 	parser.parse();
 	std::cout << parser.getConfig();

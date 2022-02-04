@@ -106,7 +106,7 @@ void	Network::recv_msg( struct kevent &event, t_udata *data ) {
 
 		data->req->add_msg( buf );						// Добавляю полученный запрос
 
-		LOG( "Read: " + std::to_string( read_bytes ) + "b\n", INFO, data->addr->sin_port );
+		LOG( "Read: " + itos( read_bytes ) + "b\n", INFO, data->addr->sin_port );
 		LOG( "Request:\n" + std::string( buf ), DEBUG, data->addr->sin_port );
 	}
 
@@ -144,7 +144,7 @@ void	Network::send_msg( struct kevent &event, t_udata *data ) {
 	std::string response = data->req->getResponse();	// Получаю ответ для отправки
 
 	send( event.ident, response.c_str(), response.length(), 0 );
-	LOG( "Write: " + std::to_string( response.length() ) + "b\n", INFO, data->addr->sin_port );
+	LOG( "Write: " + itos( response.length() ) + "b\n", INFO, data->addr->sin_port );
 	LOG( "Response:\n" + response, DEBUG, data->addr->sin_port );
 
 }
@@ -165,7 +165,7 @@ t_udata	*Network::init_udata( struct sockaddr_in *addr, std::string host, std::s
 	udata->addr = addr;
 	udata->host = host;
 	udata->port = port;
-	udata->req = new Request( _conf, host, port );		// Инициализирую Request( conf )
+	udata->req = new Request( _conf.getServerConf(host, port) );		// Инициализирую Request( conf )
 	return udata;
 }
 
