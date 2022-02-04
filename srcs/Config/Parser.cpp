@@ -34,6 +34,8 @@ void	Parser::parse( void ) {
 			getMultipleField( conf.index, file, i );
 		else if ( file[i] == "autoindex" )
 			getAutoIndex( conf.autoindex, file, i );
+		else if ( file[i] == "max_body_size" )
+			getBodySize( conf.max_body_size, file, i );
 	}
 	inherit();
 }
