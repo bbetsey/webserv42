@@ -10,11 +10,8 @@ int main( int argc, char **argv )
         LOG("Wrong arguments!", ERROR, 0);
         exit(1);
     }
-
-    LOG("wtf", DEBUG, 0);
     Parser  parser(argv[1]);
     parser.parse();
-    LOG("wtf", DEBUG, 0);
 
     Network network( parser.getConfig() );
     network.start();

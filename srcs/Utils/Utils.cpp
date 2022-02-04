@@ -82,3 +82,34 @@ std::string getMimeType(const std::string &ext)
 		return "image/bmp";
 	return "text/plain";
 }
+
+size_t hasDoubleCRLF(const std::string &msg)
+{
+    for (size_t i = 0; i < msg.length() && i + 3 < msg.length(); i++)
+        if (msg[i] == '\r' && msg[i + 1] == '\n' && msg[i + 2] == '\r' && msg[i + 3] == '\n')
+            return (i);
+    return (0);
+}
+
+size_t getContentLength(const std::string &msg)
+{
+    std::vector<std::string> lines;
+    size_t tmp;
+
+    split(msg, lines, "\r\n");
+    for (size_t i = 0; i < lines.size(); i++)
+        if ((tmp = lines[i].find("Content-Length: ")) != std::string::npos)
+            return (atoi(lines[i].substr(tmp + 15, lines[i].length()).c_str()));
+    return (0);
+}
+
+std::string readFile(std::string &path)
+{
+	if (path[0] == '/')
+		path = path.substr(1, path.length());
+
+    std::ifstream file(path.c_str());
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}

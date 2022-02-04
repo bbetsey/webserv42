@@ -4,8 +4,8 @@
 
 Cgi::Cgi(Request &req) : _req(req), _method(req.getMethod()), _uri(req.getUri()), _body(req.getBody()), _headers(req.getHeaders()), _cfg(req.getConfig())
 {
-    this->_env["SERVER_SOFTWARE"] = "webserv/0.1";
     this->_env["GATEWAY_INTERFACE"] = "CGI/1.1";
+    this->_env["SERVER_SOFTWARE"] = this->_cfg.name;
     this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
     this->_env["SERVER_PORT"] = this->_cfg.port;
     this->_env["REQUEST_METHOD"] = this->_req.getMethod();
@@ -30,7 +30,6 @@ Cgi::Cgi(Request &req) : _req(req), _method(req.getMethod()), _uri(req.getUri())
         this->_env["REMOTE_USER"] = this->_headers["Authorization"];
         this->_env["REMOTE_IDENT"] = this->_headers["Authorization"];
     }
-
     this->_env["CONTENT_TYPE"] = this->_headers["Content-Type"];
     this->_env["CONTENT_LENGTH"] = itos(this->_req.getBody().length());
 }

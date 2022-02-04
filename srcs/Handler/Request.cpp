@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request(const ServerConfig &cfg) : _cfg(cfg)
+Request::Request(const ServerConfig cfg) : _cfg(cfg), _isReady(0), _headerWasRead(0), _contentLength(0), _reqHeaderEndPos(0)
 {
 }
 
@@ -10,18 +10,30 @@ Request::~Request(void)
 
 void Request::add_msg(const std::string &msg)
 {
-    (void)msg;
+    this->_reqWhole += msg;
+
+    if (!this->_headerWasRead && (this->_reqHeaderEndPos = hasDoubleCRLF(this->_reqWhole)))
+    {
+        this->_headerWasRead = 1;
+        this->_contentLength = getContentLength(this->_reqWhole);
+    }
+    if (this->_headerWasRead)
+    {
+        if (this->_reqWhole.length() - this->_reqHeaderEndPos + 2 >= this->_contentLength)
+            this->_isReady = 1;
+    }
 }
 
 bool Request::isReady(void) const
 {
-    return 1;
+    return (this->_isReady);
 }
 
-void Request::parseFirstLine(std::string line)
+void Request::parseFirstLine()
 {
+    std::string firstLine = this->_reqWhole.substr(0, this->_reqWhole.find_first_of('\r') - 1);
     std::vector<std::string> tokens;
-    split(line, tokens, " ");
+    split(firstLine, tokens, " ");
 
     try
     {
@@ -33,60 +45,77 @@ void Request::parseFirstLine(std::string line)
     }
     catch (std::exception &e)
     {
-        std::cout << "Wrong first line! " << e.what() << std::endl;
         LOG("Wrong first line!", ERROR, 0);
+        this->_parseStatus = 0;
     }
 }
 
-void Request::parseHeaders(std::vector<std::string> lines)
+void Request::parseHeaders()
 {
-    size_t i;
-    for (i = 1; i < lines.size(); i++)
+    this->_reqHeader = this->_reqWhole.substr(0, this->_reqHeaderEndPos + 2);
+    std::vector<std::string> lines;
+    split(this->_reqHeader, lines, "\r\n");
+
+    if (lines.size() > 1)
     {
-        if (lines[i] == CRLF)
-            break;
-        size_t pos = lines[i].find_first_of(':');
-        this->_headers[lines[i].substr(0, pos)] = lines[i].substr(pos + 2, lines[i].length());
+        for (size_t i = 1; i < lines.size(); i++)
+        {
+            if (lines[i] == CRLF)
+                break;
+            size_t pos = lines[i].find_first_of(':');
+            this->_reqHeaders[lines[i].substr(0, pos)] = lines[i].substr(pos + 2, lines[i].length());
+        }
     }
-    this->parseBody(lines, i);
 }
 
-void Request::parseBody(std::vector<std::string> lines, size_t i)
+void Request::parseBody(void)
 {
-    if (lines.size() <= i + 1)
-        return;
-    for (i = i + 1; i < lines.size(); i++)
-        this->_body += lines[i];
+    this->_reqBody = this->_reqWhole.substr(this->_reqHeaderEndPos + 2, this->_reqWhole.length());
 }
 
-std::string Request::readFile(void)
+void Request::parse(void)
 {
-    std::ifstream file((this->_uri._path.substr(1, this->_uri._path.length())).c_str());
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
+    this->_parseStatus = 1;
+    this->parseFirstLine();
+    this->parseHeaders();
+    this->parseBody();
 }
+
+std::string Request::handleGet(void)
+{
+    std::string cgiResponse = Cgi(*this).execute();
+
+    return (cgiResponse);
+}
+
+std::string Request::handleErr(void)
+{
+    return ("HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length:111\r\n\r\n<!DOCTYPE html>\n<html><title>yo wtf u did</title><body>There was an error finding your error page</body></html>");
+}
+
 
 std::string Request::getResponse(void)
 {
-    std::vector<std::string> lines;
-    split(this->_body, lines, "\r\n");
+    this->parse();
 
-    try
-    {
-        this->parseFirstLine(lines.at(0));
-        this->parseHeaders(lines);
-    }
-    catch (std::exception &e)
-    {
-        LOG("Looks like we got only one line", ERROR, 0);
-    }
+    if (!this->_parseStatus)
+        return (this->handleErr());
+    
+    this->_cgiResponse = Cgi(*this).execute();
 
-    return ("wtf");
+    if (this->_method == "GET")
+        return (this->handleGet());
+    
+    this->_isReady = 0;
+    this->_reqWhole = "";
+    this->_headerWasRead = 0;
+    this->_contentLength = 0;
+    this->_reqHeaderEndPos = 0;
+    return (this->handleErr());
 }
 
 const std::string &Request::getMethod(void) const { return this->_method; }
 const Uri &Request::getUri(void) const { return this->_uri; }
-const std::string &Request::getBody(void) const { return this->_body; }
-std::map<std::string, std::string> &Request::getHeaders(void) { return this->_headers; }
+const std::string &Request::getBody(void) const { return this->_reqBody; }
+std::map<std::string, std::string> &Request::getHeaders(void) { return this->_reqHeaders; }
 const ServerConfig &Request::getConfig(void) const {return this->_cfg; }

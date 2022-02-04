@@ -14,7 +14,7 @@ SRCS	=	srcs/main.cpp \
 OBJS	= 	$(SRCS:cpp=o)
 
 OS 		=	$(uname)
-FLAGS	=	-std=c++98 -pedantic -fsanitize=address -Wall -Wextra -Werror $(if $(filter-out Linux,$(OS)),,-I/usr/include/kqueue)
+FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror $(if $(filter-out Linux,$(OS)),,-I/usr/include/kqueue)
 LDFLAGS =	$(if $(filter-out Linux,$(OS)),,-lkqueue)
 
 all: $(NAME)

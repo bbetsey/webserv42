@@ -9,15 +9,13 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <sstream>
-#include <fstream>
 
 #define CRLF "\r\n"
 
 class Request
 {
     public:
-        Request(const ServerConfig &cfg);
+        Request(const ServerConfig cfg);
         ~Request(void);
 
         std::string getResponse(void);
@@ -31,18 +29,43 @@ class Request
         std::map<std::string, std::string> &getHeaders(void);
 
     private:
-        const ServerConfig &_cfg;
+        // Config
+        const ServerConfig _cfg;
 
+        // Request irst line arguments
         std::string _method;
         Uri _uri;
         std::string _httpVersion;
-        std::string _body;
-        std::map<std::string, std::string> _headers;
 
-        void parseFirstLine(std::string str);
-        void parseHeaders(std::vector<std::string> lines);
-        void parseBody(std::vector<std::string> lines, size_t i);
+        // Request parts
+        std::string _reqWhole;
+        std::string _reqBody;
+        std::string _reqHeader;
+        std::map<std::string, std::string> _reqHeaders;
+        
 
-        std::string readFile(void);
+        // Response parts
+        std::map<std::string, std::string> _resHeaders;
+        std::map<std::string, std::string> _resBody;
+
+        // Util vars
+        bool _isReady;
+        bool _parseStatus;
+
+        bool _headerWasRead;
+        size_t _contentLength;
+        size_t _reqHeaderEndPos;
+
+        std::string _cgiResponse;
+
+        // Parser
+        void parse(void);
+        void parseFirstLine();
+        void parseHeaders();
+        void parseBody();
+
+        // Handlers
+        std::string handleGet(void);
+        std::string handleErr(void);
 
 };
