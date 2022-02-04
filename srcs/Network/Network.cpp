@@ -33,7 +33,7 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 		for ( int i = 0; i < new_events; ++i ) {
 
 			if ( is_listen_socket( kset, events[i].ident, len ) )
-				accept_new_client( kq, events[i].ident );
+				accept_new_client( kq, events[i] );
 
 			else if ( events[i].filter == EVFILT_READ )
 				read_socket( kq, events[i] );
@@ -49,21 +49,22 @@ void	Network::watch_loop( int kq, struct kevent *kset, int len ) {
 
 // MARK: - Accept
 
-void	Network::accept_new_client( int kq, int fd ) {
+void	Network::accept_new_client( int kq, struct kevent &event ) {
 	struct sockaddr_in	*new_addr = new sockaddr_in;
 	socklen_t			socklen = sizeof( new_addr );
 	int 				client_fd;
-
-	client_fd = accept( fd, ( struct sockaddr * )new_addr, &socklen );
+	
+	client_fd = accept( event.ident, ( struct sockaddr * )new_addr, &socklen );
+	t_udata	*data = ( t_udata * )(event.udata);
 
 	int opt = 1;
 	setsockopt( client_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof( opt ) );
 
 	struct kevent		new_event[2];
-	t_udata				*new_data = init_udata( new_addr );
+	t_udata				*new_data = init_udata( new_addr, data->host, data->port );
 
-	EV_SET( &new_event[0], client_fd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, new_data );
-	EV_SET( &new_event[1], client_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, new_data );
+	EV_SET( &new_event[0], client_fd, EVFILT_READ, EV_ADD, 0, 0, new_data );
+	EV_SET( &new_event[1], client_fd, EVFILT_WRITE, EV_ADD, 0, 0, new_data );
 
 	CHECK( kevent( kq, new_event, 2, NULL, 0, NULL ), "kevent: can't init new connection events" );
 
@@ -90,7 +91,6 @@ void	Network::read_socket( int kq, struct kevent &event ) {
 
 	} else {
 		recv_msg( event, data );
-		data->is_send = 0;
 	}
 
 }
@@ -103,9 +103,11 @@ void	Network::recv_msg( struct kevent &event, t_udata *data ) {
 
 	if ( read_bytes > 0 ) {
 		buf[ read_bytes ] = '\0';
-		data->msg = std::string( buf );
+
+		data->req->add_msg( buf );						// Добавляю полученный запрос
+
 		LOG( "Read: " + std::to_string( read_bytes ) + "b\n", INFO, data->addr->sin_port );
-		LOG( "Request:\n" + data->msg, DEBUG, data->addr->sin_port );
+		LOG( "Request:\n" + std::string( buf ), DEBUG, data->addr->sin_port );
 	}
 
 }
@@ -126,26 +128,24 @@ void	Network::write_socket( int kq, struct kevent &event ) {
 		if ( data->flag )
 			close( event.ident );
 		else data->flag = 1;
+		
+	} else { 
 
-	} else {
-		if ( data->is_send ) return;
+		if ( !data->req->isReady() ) return;			// Спрашиваю готов ли ответ
 		send_msg( event, data );
-		data->is_send = 1;
+
 	}
 
 }
 
 void	Network::send_msg( struct kevent &event, t_udata *data ) {
 
-	if ( data->msg.length() > 0 ) {
+	std::string response = data->req->getResponse();	// Получаю ответ для отправки
 
-		std::string msg = RESPONSE;
+	send( event.ident, response, response.length(), 0 );
+	LOG( "Write: " + std::to_string( response ) + "b\n", INFO, data->addr->sin_port );
+	LOG( "Response:\n" + msg, DEBUG, data->addr->sin_port );
 
-		send( event.ident, msg.c_str(), msg.length(), 0 );
-		data->is_send = 1;
-		LOG( "Write: " + std::to_string( msg.length() ) + "b\n", INFO, data->addr->sin_port );
-		LOG( "Response:\n" + msg, DEBUG, data->addr->sin_port );
-	}
 }
 
 
@@ -157,12 +157,14 @@ int	Network::is_listen_socket( struct kevent *kset, int fd, int len ) {
 	return 0;
 }
 
-t_udata	*Network::init_udata( struct sockaddr_in *addr ) {
+t_udata	*Network::init_udata( struct sockaddr_in *addr, std::string host, std::string port ) {
 	t_udata				*udata = new t_udata;
 
-	udata->is_send = 0;
 	udata->flag = 0;
 	udata->addr = addr;
+	udata->host = host;
+	udata->port = port;
+	udata->req = new Request( _conf );					// Инициализирую Request( conf )
 	return udata;
 }
 
@@ -180,7 +182,10 @@ void	Network::start( void ) {
 	for ( int i = 0; it != _conf.servers.end(); ++it, ++i ) {
 		Socket	socket = Socket( it->host, it->port );
 		if ( socket.start() ) {
-			EV_SET( kset + i, socket.get_sock_fd(), EVFILT_READ, EV_ADD, 0, 0, NULL );
+			t_udata *udata = new t_udata;
+			udata->host = it->host;
+			udata->port = it->port;
+			EV_SET( kset + i, socket.get_sock_fd(), EVFILT_READ, EV_ADD, 0, 0, udata );
 		}
 	}
 	CHECK( kevent( kq, kset, _conf.servers.size(), NULL, 0, NULL ), "kevent: can't init listen sockets events" );
