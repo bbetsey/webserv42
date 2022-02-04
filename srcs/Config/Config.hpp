@@ -36,7 +36,7 @@ struct ServerConfig {
 	std::string						name;
 	std::string						port;
 	std::map< int, std::string >	error_pages;
-	std::vector<Location>			locations;
+	std::vector< Location >			locations;
 
 
 	// MARK: - struct methods
@@ -58,7 +58,7 @@ struct Config {
 	std::vector< ServerConfig >		servers;
 	std::map< int, std::string >	error_pages;
 	std::string						root;
-	std::string						index;
+	std::vector< std::string >		index;
 	int								autoindex;
 
 

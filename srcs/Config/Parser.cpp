@@ -27,6 +27,10 @@ void	Parser::parse( void ) {
 			getErrorPage( conf.error_pages, file, i );
 		else if ( file[i] == "root" )
 			getSingleField( conf.root, file, i );
+		else if ( file[i] == "index" )
+			getMultipleField( conf.index, file, i );
+		else if ( file[i] == "autoindex" )
+			getAutoIndex( conf.autoindex, file, i );
 	}
 
 }

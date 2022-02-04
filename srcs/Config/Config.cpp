@@ -66,11 +66,19 @@ std::ostream	&operator << ( std::ostream &out, const Config &conf ) {
 	out << BOLDWHITE << "\nCONFIGURATION\n" << std::endl;
 	if ( conf.root.length() > 0 )
 		out << "root: " << conf.root << ";" << std::endl;
+	if ( conf.index.size() > 0 ) {
+		out << "index: ";
+		std::vector< std::string >::const_iterator	it = conf.index.begin();
+		for ( ; it != conf.index.end(); ++it )
+			out << *it << " ";
+		out << std::endl;
+	}
 	if ( conf.error_pages.size() > 0 ) {
 		std::map< int, std::string >::const_iterator	it = conf.error_pages.begin();
 		for ( ; it != conf.error_pages.end(); ++it )
 			out << "error_page " << it->first << " " << it->second << ";" << std::endl;
 	}
+	if ( conf.autoindex ) out << "autoindex: on" << std::endl;
 	if ( conf.servers.size() > 0 ) {
 		std::vector< ServerConfig >::const_iterator	it = conf.servers.begin();
 		for ( ; it != conf.servers.end(); ++it )
