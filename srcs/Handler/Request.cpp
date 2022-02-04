@@ -81,36 +81,75 @@ void Request::parse(void)
     this->parseBody();
 }
 
+void Request::genHeader(std::string path)
+{
+    this->_resHeader += "HTTP/1.1 " + itos(this->_cgiStatus) + " " + getStatusName(this->_cgiStatus) + CRLF;
+    this->_resHeader += "Date: " + getDate() + CRLF;
+    this->_resHeader += "Server: " + this->_cfg.name + CRLF;
+    this->_resHeader += "Content-Length: " + itos(this->_resBody.size()) + CRLF;
+    this->_resHeader += "Content-Type: " + (this->_cgiStatus == 200 ? this->_cgiType : "text/html") + CRLF;
+    if (path.length() > 0)
+    {
+        this->_resHeader += "Last-Modified: " + getLastModified(this->_uri._path) + CRLF;
+    }
+
+    this->_resHeader += CRLF;
+}
+
 std::string Request::handleGet(void)
 {
-    std::string cgiResponse = Cgi(*this).execute();
+    this->_resBody = readFile(this->_uri._path);
+    this->genHeader(this->_uri._path);\
 
-    return (cgiResponse);
+    return (this->_resHeader + this->_resBody);
 }
 
 std::string Request::handleErr(void)
 {
-    return ("HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length:111\r\n\r\n<!DOCTYPE html>\n<html><title>yo wtf u did</title><body>There was an error finding your error page</body></html>");
+    this->_resBody = "<!DOCTYPE html>\n<html><title>500</title><body><h1>yo wtf u did?</h1></body></html>";
+    this->genHeader("");
+
+    return (this->_resHeader + this->_resBody);
 }
 
+void Request::parseCgiResponse(void)
+{
+    std::vector<std::string> lines;
+    size_t tmpPos;
+
+    split(this->_cgiResponse, lines, "\r\n");
+    for (size_t i = 0; i < lines.size(); i++)
+    {
+        if ((tmpPos = lines[i].find("Status: ")) != std::string::npos)
+            this->_cgiStatus = atoi(lines[i].substr(tmpPos + 7, lines[i].length()).c_str());
+        if ((tmpPos = lines[i].find("Content-type: ")) != std::string::npos)
+            this->_cgiType = lines[i].substr(tmpPos + 13, lines[i].length());
+    }
+}
 
 std::string Request::getResponse(void)
 {
     this->parse();
 
-    if (!this->_parseStatus)
-        return (this->handleErr());
-    
-    this->_cgiResponse = Cgi(*this).execute();
-
-    if (this->_method == "GET")
-        return (this->handleGet());
-    
     this->_isReady = 0;
     this->_reqWhole = "";
     this->_headerWasRead = 0;
     this->_contentLength = 0;
     this->_reqHeaderEndPos = 0;
+
+    if (!this->_parseStatus)
+        return (this->handleErr());
+
+    this->_cgiResponse = Cgi(*this).execute();
+
+    this->parseCgiResponse();
+    if (this->_cgiStatus == 500)
+        return (this->handleErr());
+
+    if (this->_method == "GET")
+        return (this->handleGet());
+
+
     return (this->handleErr());
 }
 

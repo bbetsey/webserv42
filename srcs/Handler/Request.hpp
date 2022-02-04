@@ -45,8 +45,8 @@ class Request
         
 
         // Response parts
-        std::map<std::string, std::string> _resHeaders;
-        std::map<std::string, std::string> _resBody;
+        std::string _resHeader;
+        std::string _resBody;
 
         // Util vars
         bool _isReady;
@@ -57,15 +57,18 @@ class Request
         size_t _reqHeaderEndPos;
 
         std::string _cgiResponse;
+        int _cgiStatus;
+        std::string _cgiType;
 
         // Parser
         void parse(void);
-        void parseFirstLine();
-        void parseHeaders();
-        void parseBody();
+        void parseFirstLine(void);
+        void parseHeaders(void);
+        void parseBody(void);
+        void parseCgiResponse(void);
 
         // Handlers
+        void genHeader(std::string path);
         std::string handleGet(void);
         std::string handleErr(void);
-
 };

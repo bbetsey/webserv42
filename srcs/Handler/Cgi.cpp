@@ -11,8 +11,8 @@ Cgi::Cgi(Request &req) : _req(req), _method(req.getMethod()), _uri(req.getUri())
     this->_env["REQUEST_METHOD"] = this->_req.getMethod();
     this->_env["PATH_INFO"] = this->_uri._path;
     this->_env["PATH_TRANSLATED"] = this->_uri._path;
-    this->_env["SCRIPT_NAME"] = this->_cfg.getLocation(this->_uri._path).cgi_path;
-	this->_env["SCRIPT_FILENAME"] = this->_cfg.getLocation(this->_uri._path).cgi_path;
+    this->_env["SCRIPT_NAME"] = "./test_ubuntu/ubuntu_cgi_tester";
+	this->_env["SCRIPT_FILENAME"] = "./test_ubuntu/ubuntu_cgi_tester";
     this->_env["QUERY_STRING"] = this->_uri._qString;
     this->_env["REMOTE_ADDR"] = this->_cfg.host;
 	this->_env["REMOTEaddr"] = this->_cfg.host;
@@ -90,7 +90,7 @@ std::string Cgi::execute(void)
 		dup2(fdIn, 0);
 		dup2(fdOut, 1);
 		char **null = NULL;
-		execve(this->_cfg.getLocation(this->_uri._path).cgi_path.c_str(), null, env);
+		execve("./test_ubuntu/ubuntu_cgi_tester", null, env);
 		write(1, "Status: 500\r\n\r\n", 15);
 	}
 	else

@@ -20,3 +20,4 @@ std::string getMimeType(const std::string &ext);
 size_t getContentLength(const std::string &msg);
 size_t hasDoubleCRLF(const std::string &msg);
 std::string readFile(std::string &path);
+std::string getStatusName(const int &status);
