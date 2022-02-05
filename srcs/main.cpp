@@ -3,18 +3,23 @@
 #include "Config/Parser.hpp"
 #include "Handler/Request.hpp"
 
-int main( void )
+int main( int argc, char **argv )
 {
-    // if (argc != 2)
-    // {
-    //     LOG("Wrong arguments!", ERROR, 0);
-    //     exit(1);
-    // }
-    // Parser  parser(argv[1]);
-    // parser.parse();
+    if (argc != 2)
+    {
+        LOG("Wrong arguments!", ERROR, 0);
+        exit(1);
+    }
+    Parser  parser(argv[1]);
+    parser.parse();
 
-    // Network network( Config::getTestConfig() );
-    // network.start();
-    Config cfg = Config::getTestConfig();
-    Network(cfg).start();
+    std::cout << parser.getConfig();
+
+    Network network( parser.getConfig() );
+    network.start();
+
+
+    // Config cfg = Config::getTestConfig();
+    // Network(cfg).start();
+    
 }
