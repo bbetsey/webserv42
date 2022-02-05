@@ -86,8 +86,11 @@ void Request::genHeader(std::string path)
     this->_resHeader += "HTTP/1.1 " + itos(this->_cgiStatus) + " " + getStatusName(this->_cgiStatus) + CRLF;
     this->_resHeader += "Date: " + getDate() + CRLF;
     this->_resHeader += "Server: " + this->_cfg.name + CRLF;
-    this->_resHeader += "Content-Length: " + itos(this->_resBody.size()) + CRLF;
-    this->_resHeader += "Content-Type: " + (this->_cgiStatus == 200 ? this->_cgiType : "text/html") + CRLF;
+    if (this->_resBody.length() > 0)
+    {
+        this->_resHeader += "Content-Length: " + itos(this->_resBody.size()) + CRLF;
+        this->_resHeader += "Content-Type: " + (this->_cgiStatus == 200 ? this->_cgiType : "text/plain") + CRLF;
+    }
     if (path.length() > 0)
     {
         this->_resHeader += "Last-Modified: " + getLastModified(this->_uri._path) + CRLF;
@@ -96,16 +99,23 @@ void Request::genHeader(std::string path)
     this->_resHeader += CRLF;
 }
 
+std::string Request::handlePost(void)
+{
+    this->genHeader("");
+    return this->_resHeader;
+}
+
 std::string Request::handleGet(void)
 {
     this->_resBody = readFile(this->_uri._path);
-    this->genHeader(this->_uri._path);\
+    this->genHeader(this->_uri._path);
 
     return (this->_resHeader + this->_resBody);
 }
 
-std::string Request::handleErr(void)
+std::string Request::handleErr(const std::string &err)
 {
+    LOG(err, ERROR, 0);
     this->_resBody = "<!DOCTYPE html>\n<html><title>500</title><body><h1>yo wtf u did?</h1></body></html>";
     this->genHeader("");
 
@@ -138,19 +148,20 @@ std::string Request::getResponse(void)
     this->_reqHeaderEndPos = 0;
 
     if (!this->_parseStatus)
-        return (this->handleErr());
+        return (this->handleErr("Parser fail"));
 
+    LOG(this->_cfg.getLocation(this->_uri._path).cgi_path + " -> BEING EXECVED", DEBUG, 0);
     this->_cgiResponse = Cgi(*this).execute();
 
     this->parseCgiResponse();
-    if (this->_cgiStatus == 500)
-        return (this->handleErr());
+    if (this->_cgiStatus != 200)
+        return (this->handleErr("CGI ERR"));
 
     if (this->_method == "GET")
         return (this->handleGet());
 
 
-    return (this->handleErr());
+    return (this->handleErr("No such method"));
 }
 
 const std::string &Request::getMethod(void) const { return this->_method; }

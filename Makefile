@@ -1,4 +1,4 @@
-NAME	=	webserv
+NAME	=	test_macos/webserv
 
 SRCS	=	srcs/main.cpp \
 			srcs/Handler/Request.cpp \
@@ -14,8 +14,8 @@ SRCS	=	srcs/main.cpp \
 OBJS	= 	$(SRCS:cpp=o)
 
 OS 		=	$(uname)
-FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror $(if $(filter-out Linux,$(OS)),,-I/usr/include/kqueue)
-LDFLAGS =	$(if $(filter-out Linux,$(OS)),,-lkqueue)
+FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror
+LDFLAGS =
 
 all: $(NAME)
 

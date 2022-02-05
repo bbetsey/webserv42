@@ -70,5 +70,6 @@ class Request
         // Handlers
         void genHeader(std::string path);
         std::string handleGet(void);
-        std::string handleErr(void);
+        std::string handlePost(void);
+        std::string handleErr(const std::string &err);
 };

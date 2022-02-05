@@ -13,7 +13,7 @@ Location	Location::getTestConfig( void ) {
 	loc.methods.push_back("DELETE");
 	loc.max_body_size = 8192;
 	loc.index.push_back( "index.html" );
-	loc.cgi_path = "ubuntu_cgi_tester";
+	loc.cgi_path = "cgi_tester";
 	loc.cgi_ext = "";
 	loc.autoindex = 0;
 	loc.alias = "";
@@ -25,8 +25,17 @@ Location	Location::getTestConfig( void ) {
 // MARK: - ServerConfig Struct Methods
 
 Location	ServerConfig::getLocation( const std::string &path ) const {
-	(void)path;
-	return locations[0];
+	if (this->locations.size() == 0)
+	{
+		LOG("No locations in config!", ERROR, 0);
+		exit(1);
+	}
+	for (size_t i = 0; i < this->locations.size(); i++)
+	{
+		if (this->locations[i].path == path)
+			return (this->locations[i]);
+	}
+	return (this->locations.at(0));
 }
 
 
