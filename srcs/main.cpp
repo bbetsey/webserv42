@@ -3,7 +3,7 @@
 #include "Config/Parser.hpp"
 #include "Handler/Request.hpp"
 
-int main( int argc, char **argv )
+int main(int argc, char **argv)
 {
     if (argc != 2)
     {
@@ -13,13 +13,6 @@ int main( int argc, char **argv )
     Parser  parser(argv[1]);
     parser.parse();
 
-    std::cout << parser.getConfig();
-
     Network network( parser.getConfig() );
     network.start();
-
-
-    // Config cfg = Config::getTestConfig();
-    // Network(cfg).start();
-    
 }

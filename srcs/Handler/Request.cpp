@@ -6,6 +6,10 @@ Request::Request(const ServerConfig cfg) : _cfg(cfg), _isReady(0), _headerWasRea
 
 Request::~Request(void)
 {
+    if (chdir(this->_pathToReturn) != 0)
+    {
+        LOG("Can't change dir back to [" + std::string(this->_pathToReturn) + "]", ERROR, 0);
+    }
 }
 
 void Request::add_msg(const std::string &msg)
@@ -73,6 +77,12 @@ void Request::parseBody(void)
 
 void Request::parse(void)
 {
+    getcwd(this->_pathToReturn, 100);
+    if (chdir(this->_cfg.root.c_str()) != 0)
+    {
+        LOG("Can't change dir to [" + this->_cfg.root + "] from " + this->_pathToReturn, ERROR, 0);
+    }
+
     this->_parseStatus = 1;
     this->parseFirstLine();
     this->parseHeaders();

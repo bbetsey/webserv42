@@ -62,6 +62,8 @@ class Request
         int _cgiStatus;
         std::string _cgiType;
 
+        char _pathToReturn[100];
+
         // Parser
         void parse(void);
         void parseFirstLine(void);
