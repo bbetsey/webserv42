@@ -80,6 +80,8 @@ std::string getMimeType(const std::string &ext)
 		return "image/png";
 	if (ext == "bmp")
 		return "image/bmp";
+	if (ext == "ico")
+		return "image/x-icon";
 	return "text/plain";
 }
 

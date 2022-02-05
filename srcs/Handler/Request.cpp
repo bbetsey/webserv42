@@ -89,7 +89,7 @@ void Request::genHeader(std::string path)
     if (this->_resBody.length() > 0)
     {
         this->_resHeader += "Content-Length: " + itos(this->_resBody.size()) + CRLF;
-        this->_resHeader += "Content-Type: " + (this->_cgiStatus == 200 ? this->_cgiType : "text/plain") + CRLF;
+        this->_resHeader += "Content-Type: " + (this->_cgiStatus == 200 ? getMimeType(this->_uri._path.substr(this->_uri._path.find_last_of('.') + 1, this->_uri._path.length())) : "text/html") + CRLF;
     }
     if (path.length() > 0)
     {
@@ -124,6 +124,7 @@ std::string Request::handleErr(const std::string &err)
 
 void Request::parseCgiResponse(void)
 {
+    LOG("CGI RESPONSE:\n" + this->_cgiResponse, DEBUG, 0);
     std::vector<std::string> lines;
     size_t tmpPos;
 
@@ -140,12 +141,6 @@ void Request::parseCgiResponse(void)
 std::string Request::getResponse(void)
 {
     this->parse();
-
-    this->_isReady = 0;
-    this->_reqWhole = "";
-    this->_headerWasRead = 0;
-    this->_contentLength = 0;
-    this->_reqHeaderEndPos = 0;
 
     if (!this->_parseStatus)
         return (this->handleErr("Parser fail"));
