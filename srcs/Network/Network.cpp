@@ -146,6 +146,8 @@ void	Network::send_msg( struct kevent &event, t_udata *data ) {
 	send( event.ident, response.c_str(), response.length(), 0 );
 	LOG( "Write: " + itos( response.length() ) + "b\n", INFO, data->addr->sin_port );
 	LOG( "Response:\n" + response, DEBUG, data->addr->sin_port );
+	delete data->req;
+	data->req = new Request( _conf.getServerConf( data->host, data->port ) );
 
 }
 
