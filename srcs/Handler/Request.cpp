@@ -39,8 +39,6 @@ void Request::parseFirstLine()
     {
         this->_method = tokens.at(0);
         this->_uri = Uri(tokens.at(1));
-        if (this->_uri._path == "/")
-            this->_uri._path = "/index.html";
         this->_httpVersion = tokens.at(2);
     }
     catch (std::exception &e)
@@ -86,7 +84,7 @@ void Request::genHeader(std::string path)
     this->_resHeader += "HTTP/1.1 " + itos(this->_cgiStatus) + " " + getStatusName(this->_cgiStatus) + CRLF;
     this->_resHeader += "Date: " + getDate() + CRLF;
     this->_resHeader += "Server: " + this->_cfg.name + CRLF;
-    if (this->_resBody.length() > 0)
+    if (this->_uri._path.length() > 0)
     {
         this->_resHeader += "Content-Length: " + itos(this->_resBody.size()) + CRLF;
         this->_resHeader += "Content-Type: " + (this->_cgiStatus == 200 ? getMimeType(this->_uri._path.substr(this->_uri._path.find_last_of('.') + 1, this->_uri._path.length())) : "text/html") + CRLF;
@@ -107,7 +105,25 @@ std::string Request::handlePost(void)
 
 std::string Request::handleGet(void)
 {
-    this->_resBody = readFile(this->_uri._path);
+    this->_uri._path = "." + this->_uri._path;
+
+    struct stat st;
+
+    if (stat(this->_uri._path.c_str(), &st) == 0)
+    {
+        if (st.st_mode & S_IFDIR)
+        {
+            this->_resBody = AutoIndexGen(this->_uri._path).getOutput();
+        }
+        else
+        {
+            this->_resBody = readFile(this->_uri._path);
+        }
+    }
+    else
+    {
+        this->handleErr("No such file/directory");
+    }
     this->genHeader(this->_uri._path);
 
     return (this->_resHeader + this->_resBody);

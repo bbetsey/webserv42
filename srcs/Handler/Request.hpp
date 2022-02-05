@@ -5,10 +5,12 @@
 #include "../Utils/Uri.hpp"
 #include "../Config/Config.hpp"
 #include "../Includes/webserv.hpp"
+#include "../Utils/AutoIndexGen.hpp"
 
 #include <iostream>
 #include <map>
 #include <string>
+#include <sys/stat.h>
 
 #define CRLF "\r\n"
 
