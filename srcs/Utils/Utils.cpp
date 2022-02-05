@@ -82,7 +82,7 @@ std::string getMimeType(const std::string &ext)
 		return "image/bmp";
 	if (ext == "ico")
 		return "image/x-icon";
-	return "text/plain";
+	return "text/html";
 }
 
 size_t hasDoubleCRLF(const std::string &msg)
@@ -107,9 +107,6 @@ size_t getContentLength(const std::string &msg)
 
 std::string readFile(std::string &path)
 {
-	if (path[0] == '/')
-		path = path.substr(1, path.length());
-
     std::ifstream file(path.c_str());
     std::stringstream buffer;
     buffer << file.rdbuf();

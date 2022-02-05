@@ -9,7 +9,8 @@ SRCS	=	srcs/main.cpp \
 			srcs/Config/Parser.cpp \
 			srcs/Network/Network.cpp \
 			srcs/Network/Socket.cpp \
-			srcs/Utils/Logger.cpp
+			srcs/Utils/Logger.cpp \
+			srcs/Utils/AutoIndexGen.cpp
 
 OBJS	= 	$(SRCS:cpp=o)
 
