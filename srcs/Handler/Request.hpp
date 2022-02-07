@@ -14,6 +14,8 @@
 
 #define CRLF "\r\n"
 
+enum ResponseType { REGFILE, PLAINHTML, NOTHING };
+
 class Request
 {
     public:
@@ -62,6 +64,8 @@ class Request
         int _cgiStatus;
         std::string _cgiType;
 
+        ResponseType _resType;
+
         char _pathToReturn[100];
 
         // Parser
@@ -72,8 +76,11 @@ class Request
         void parseCgiResponse(void);
 
         // Handlers
-        void genHeader(std::string path);
+        void genHeader(void);
         std::string handleGet(void);
         std::string handlePost(void);
+        std::string handleHead(void);
+        std::string handleDelete(void);
         std::string handleErr(const std::string &err);
+
 };

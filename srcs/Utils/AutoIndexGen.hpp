@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "../Includes/webserv.hpp"
+#include "../Utils/Utils.hpp"
 #include "Logger.hpp"
 
 class AutoIndexGen

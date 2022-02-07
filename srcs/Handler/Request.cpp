@@ -89,17 +89,17 @@ void Request::parse(void)
     this->parseBody();
 }
 
-void Request::genHeader(std::string path)
+void Request::genHeader()
 {
     this->_resHeader += "HTTP/1.1 " + itos(this->_cgiStatus) + " " + getStatusName(this->_cgiStatus) + CRLF;
     this->_resHeader += "Date: " + getDate() + CRLF;
     this->_resHeader += "Server: " + this->_cfg.name + CRLF;
-    if (this->_uri._path.length() > 0)
+    if (this->_resType != NOTHING)
     {
         this->_resHeader += "Content-Length: " + itos(this->_resBody.size()) + CRLF;
-        this->_resHeader += "Content-Type: " + (this->_cgiStatus == 200 ? getMimeType(this->_uri._path.substr(this->_uri._path.find_last_of('.') + 1, this->_uri._path.length())) : "text/html") + CRLF;
+        this->_resHeader += "Content-Type: " + (this->_resType == REGFILE ? getMimeType(this->_uri._path.substr(this->_uri._path.find_last_of('.') + 1, this->_uri._path.length())) : "text/html") + CRLF;
     }
-    if (path.length() > 0)
+    if (this->_resType == REGFILE)
     {
         this->_resHeader += "Last-Modified: " + getLastModified(this->_uri._path) + CRLF;
     }
@@ -109,32 +109,54 @@ void Request::genHeader(std::string path)
 
 std::string Request::handlePost(void)
 {
-    this->genHeader("");
-    return this->_resHeader;
+    this->_cgiResponse = Cgi(*this).execute();
+
+    this->parseCgiResponse();
+    if (this->_cgiStatus != 200)
+        return (this->handleErr("CGI ERR"));
+
+    this->_resType = NOTHING;
+    this->genHeader();
+    return (this->_resHeader);
+}
+
+std::string Request::handleHead(void)
+{
+    this->_resType = NOTHING;
+    this->genHeader();
+    return (this->_resHeader);
+}
+
+std::string Request::handleDelete(void)
+{
+    return (this->handleErr("Not supported yet :)"));
 }
 
 std::string Request::handleGet(void)
 {
+    this->_cgiResponse = Cgi(*this).execute();
+
+    this->parseCgiResponse();
+    if (this->_cgiStatus != 200)
+        return (this->handleErr("CGI ERR"));
+
     this->_uri._path = "." + this->_uri._path;
 
-    struct stat st;
-
-    if (stat(this->_uri._path.c_str(), &st) == 0)
+    switch (pathType(this->_uri._path))
     {
-        if (st.st_mode & S_IFDIR)
-        {
-            this->_resBody = AutoIndexGen(this->_uri._path).getOutput();
-        }
-        else
-        {
+        case 1:
+            this->_resType = REGFILE;
             this->_resBody = readFile(this->_uri._path);
-        }
+            break;
+        case 2:
+            this->_resType = PLAINHTML;
+            this->_resBody = AutoIndexGen(this->_uri._path).getOutput();
+            break;
+        default:
+            return (this->handleErr("No such file/directory"));
     }
-    else
-    {
-        this->handleErr("No such file/directory");
-    }
-    this->genHeader(this->_uri._path);
+
+    this->genHeader();
 
     return (this->_resHeader + this->_resBody);
 }
@@ -142,8 +164,9 @@ std::string Request::handleGet(void)
 std::string Request::handleErr(const std::string &err)
 {
     LOG(err, ERROR, 0);
-    this->_resBody = "<!DOCTYPE html>\n<html><title>500</title><body><h1>yo wtf u did?</h1></body></html>";
-    this->genHeader("");
+    this->_resBody = "<!DOCTYPE html>\n<html><title>500</title><body><h1>yo wtf u did? " + err + "</h1></body></html>";
+    this->_resType = PLAINHTML;
+    this->genHeader();
 
     return (this->_resHeader + this->_resBody);
 }
@@ -171,16 +194,14 @@ std::string Request::getResponse(void)
     if (!this->_parseStatus)
         return (this->handleErr("Parser fail"));
 
-    LOG(this->_cfg.getLocation(this->_uri._path).cgi_path + " -> BEING EXECVED", DEBUG, 0);
-    this->_cgiResponse = Cgi(*this).execute();
-
-    this->parseCgiResponse();
-    if (this->_cgiStatus != 200)
-        return (this->handleErr("CGI ERR"));
-
     if (this->_method == "GET")
         return (this->handleGet());
-
+    if (this->_method == "POST")
+        return (this->handlePost());
+    if (this->_method == "HEAD")
+        return (this->handleHead());
+    if (this->_method == "DELETE")
+        return (this->handleDelete());
 
     return (this->handleErr("No such method"));
 }
