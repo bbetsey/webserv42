@@ -41,6 +41,7 @@ struct ServerConfig {
 	std::vector< std::string >		index;
 	std::map< int, std::string >	error_pages;
 	std::vector< Location >			locations;
+	std::vector<std::string>		locationdirs;
 	int								autoindex;
 	int								max_body_size;
 

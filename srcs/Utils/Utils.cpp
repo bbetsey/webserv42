@@ -105,12 +105,16 @@ size_t getContentLength(const std::string &msg)
     return (0);
 }
 
-std::string readFile(std::string &path)
+int readFile(const std::string &path, std::string &body)
 {
     std::ifstream file(path.c_str());
+	if (!file.is_open())
+		return (0);
     std::stringstream buffer;
     buffer << file.rdbuf();
-    return buffer.str();
+    body = buffer.str();
+	file.close();
+	return (1);
 }
 
 std::string getStatusName(const int &code)

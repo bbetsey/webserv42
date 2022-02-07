@@ -24,12 +24,22 @@ Location	Location::getTestConfig( void ) {
 
 // MARK: - ServerConfig Struct Methods
 
+static std::string dirnameOf(const std::string& fname)
+{
+     size_t pos = fname.find_last_of("\\/");
+     return (std::string::npos == pos) ? "" : fname.substr(0, pos);
+}
+
 Location	ServerConfig::getLocation( const std::string &path ) const {
 	if (this->locations.size() == 0)
 	{
 		LOG("No locations in config!", ERROR, 0);
 		exit(1);
 	}
+	std::string dir = dirnameOf(path);
+	if (dir == "")
+		dir = "/";
+
 	for (size_t i = 0; i < this->locations.size(); i++)
 	{
 		if (this->locations[i].path == path)

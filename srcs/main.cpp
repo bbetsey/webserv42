@@ -13,6 +13,8 @@ int main(int argc, char **argv)
     Parser  parser(argv[1]);
     parser.parse();
 
-    Network network( parser.getConfig() );
+    Config cfg = parser.getConfig();
+    std::cout << cfg;
+    Network network( cfg );
     network.start();
 }

@@ -34,7 +34,7 @@ class Request
 
     private:
         // Config
-        const ServerConfig _cfg;
+        ServerConfig _cfg;
 
         // Request irst line arguments
         std::string _method;
@@ -51,6 +51,7 @@ class Request
         // Response parts
         std::string _resHeader;
         std::string _resBody;
+        int _resStatus;
 
         // Util vars
         bool _isReady;
@@ -67,6 +68,7 @@ class Request
         ResponseType _resType;
 
         char _pathToReturn[100];
+        std::string _filePath;
 
         // Parser
         void parse(void);
@@ -81,6 +83,9 @@ class Request
         std::string handlePost(void);
         std::string handleHead(void);
         std::string handleDelete(void);
+        std::string handlePut(void);
         std::string handleErr(const std::string &err);
+
+        bool readContent(const std::string &path);
 
 };
