@@ -224,12 +224,12 @@ std::string Request::handleGet(void)
     }
     else if ((tmp == 2 || this->_filePath == "/"))
     {
-        std::string indexPath = "./" + this->_filePath + (this->_filePath[this->_filePath.length() - 1] == '/' ? "" : "/") + this->_cfg.getLocation(this->_uri._path).index[0];
+        std::string indexPath = "." + (this->_filePath[0] == '/' ? std::string("") : std::string("/")) + this->_filePath + (this->_filePath[this->_filePath.length() - 1] == '/' ? "" : "/") + this->_cfg.getLocation(this->_uri._path).index[0];
         LOG("INDEX PATH: [" + indexPath + "]", ERROR, 0);
         switch (pathType(indexPath))
         {
             case 1:
-                if (!this->readContent("./" + indexPath))
+                if (!this->readContent(indexPath))
                 {
                     return (this->handleErr("Found index file but can't open it"));
                 }
