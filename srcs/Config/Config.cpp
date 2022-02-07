@@ -35,7 +35,7 @@ Location	ServerConfig::getLocation( const std::string &path ) const {
 		if (this->locations[i].path == path)
 			return (this->locations[i]);
 	}
-	return (this->locations.at(0));
+	return (this->locations[0]);
 }
 
 

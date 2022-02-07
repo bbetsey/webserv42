@@ -149,8 +149,16 @@ std::string Request::handleGet(void)
             this->_resBody = readFile(this->_uri._path);
             break;
         case 2:
-            this->_resType = PLAINHTML;
-            this->_resBody = AutoIndexGen(this->_uri._path).getOutput();
+            if (this->_cfg.getLocation(this->_uri._path).autoindex == 1)
+            {
+                this->_resType = PLAINHTML;
+                this->_resBody = AutoIndexGen(this->_uri._path).getOutput();           
+            }
+            else
+            {
+                this->_uri._path = this->_uri._path + "index.html";
+                return (this->handleGet());
+            }
             break;
         default:
             return (this->handleErr("No such file/directory"));
