@@ -3,6 +3,7 @@
 #include <iostream>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <string.h>
 
 #include "../Includes/webserv.hpp"
 #include "Logger.hpp"

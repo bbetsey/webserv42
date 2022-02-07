@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <stdlib.h>
 
 #include "../Includes/webserv.hpp"
 
