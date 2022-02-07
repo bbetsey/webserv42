@@ -87,7 +87,7 @@ static std::string getFilePath(std::string fullPath) // /directory/anotherDirect
     size_t tmp = fullPath.find_first_of('/');
     if (tmp != std::string::npos)
         return (fullPath.substr(tmp + 1, fullPath.length()));
-    return ("/");
+    return (fullPath);
 }
 
 void Request::parse(void)
@@ -156,19 +156,14 @@ std::string Request::handlePost(void)
 
 std::string Request::handleHead(void)
 {
-    if (!vectorContains("POST", this->_cfg.getLocation(this->_uri._path).methods))
+    if (!vectorContains("GET", this->_cfg.getLocation(this->_uri._path).methods) && !vectorContains("HEAD", this->_cfg.getLocation(this->_uri._path).methods))
     {
         this->_resStatus = 405;
         this->_resType = NOTHING;
     }
-    else
-    {
-        this->_resStatus = 204;
-        this->_resType = NOTHING;
-    }
-    
-    this->genHeader();
 
+    std::string tmp = this->handleGet();
+    
     return (this->_resHeader);
 }
 
@@ -179,8 +174,21 @@ std::string Request::handleDelete(void)
         this->_resStatus = 405;
         return (this->handleErr("Not allowed method"));
     }
-    this->_resStatus = 204;
-    return (this->handleErr("Not supported yet :)"));
+
+    if (pathType(this->_filePath))
+	{
+		if (remove(this->_filePath.c_str()) == 0)
+			this->_resStatus = 204;
+		else
+			this->_resStatus = 403;
+	}
+	else
+		this->_resStatus = 404;
+	if (this->_resStatus == 403 || this->_resStatus == 404)
+		return (this->handleErr("Can't delete"));
+	
+    this->genHeader();
+    return (this->_resHeader);
 }
 
 bool Request::readContent(const std::string &path)
@@ -207,6 +215,7 @@ std::string Request::handleGet(void)
         this->_resStatus = 405;
         return (this->handleErr("Not allowed method"));
     }
+
     this->_cgiResponse = Cgi(*this).execute();
 
     this->parseCgiResponse();
@@ -313,7 +322,7 @@ static int writeContent(const std::string &content, const std::string &path)
 
 std::string Request::handlePut(void)
 {
-    this->_resStatus = writeContent(this->_reqBody, "put_test/" + this->_filePath);
+    this->_resStatus = writeContent(this->_reqBody, this->_filePath);
 
     if (!(this->_resStatus == 201 || this->_resStatus == 204))
         return this->handleErr("Write failed");

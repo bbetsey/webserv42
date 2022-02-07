@@ -1,4 +1,4 @@
-NAME	=	test_ubuntu/webserv
+NAME	=	test/webserv
 
 SRCS	=	srcs/main.cpp \
 			srcs/Handler/Request.cpp \
@@ -15,7 +15,7 @@ SRCS	=	srcs/main.cpp \
 OBJS	= 	$(SRCS:cpp=o)
 
 OS 		=	$(uname)
-FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror -fsanitize=address -I/usr/include/kqueue
+FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror -I/usr/include/kqueue
 LDFLAGS =	-lkqueue
 
 all: $(NAME)
