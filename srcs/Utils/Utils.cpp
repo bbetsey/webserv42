@@ -105,12 +105,16 @@ size_t getContentLength(const std::string &msg)
     return (0);
 }
 
-std::string readFile(std::string &path)
+int readFile(const std::string &path, std::string &body)
 {
     std::ifstream file(path.c_str());
+	if (!file.is_open())
+		return (0);
     std::stringstream buffer;
     buffer << file.rdbuf();
-    return buffer.str();
+    body = buffer.str();
+	file.close();
+	return (1);
 }
 
 std::string getStatusName(const int &code)
@@ -191,4 +195,20 @@ std::string getStatusName(const int &code)
 
 		default: return std::string();
 	}
+}
+
+int pathType(const std::string &path)
+{
+	struct stat s;
+	if (stat(path.c_str(), &s) == 0 )
+	{
+		if (s.st_mode & S_IFDIR)
+			return 2;
+		else if (s.st_mode & S_IFREG)
+			return 1;
+		else
+			return 0;
+	}
+	else
+		return 0;
 }

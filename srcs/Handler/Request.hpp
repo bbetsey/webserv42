@@ -14,6 +14,8 @@
 
 #define CRLF "\r\n"
 
+enum ResponseType { REGFILE, PLAINHTML, NOTHING };
+
 class Request
 {
     public:
@@ -32,7 +34,7 @@ class Request
 
     private:
         // Config
-        const ServerConfig _cfg;
+        ServerConfig _cfg;
 
         // Request irst line arguments
         std::string _method;
@@ -49,6 +51,7 @@ class Request
         // Response parts
         std::string _resHeader;
         std::string _resBody;
+        int _resStatus;
 
         // Util vars
         bool _isReady;
@@ -62,7 +65,10 @@ class Request
         int _cgiStatus;
         std::string _cgiType;
 
+        ResponseType _resType;
+
         char _pathToReturn[100];
+        std::string _filePath;
 
         // Parser
         void parse(void);
@@ -72,8 +78,14 @@ class Request
         void parseCgiResponse(void);
 
         // Handlers
-        void genHeader(std::string path);
+        void genHeader(void);
         std::string handleGet(void);
         std::string handlePost(void);
+        std::string handleHead(void);
+        std::string handleDelete(void);
+        std::string handlePut(void);
         std::string handleErr(const std::string &err);
+
+        bool readContent(const std::string &path);
+
 };

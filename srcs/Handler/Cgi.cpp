@@ -12,8 +12,6 @@ Cgi::Cgi(Request &req) : _req(req), _method(req.getMethod()), _uri(req.getUri())
     this->_env["PATH_INFO"] = this->_uri._path;
     this->_env["PATH_TRANSLATED"] = this->_uri._path;
     this->_env["SCRIPT_NAME"] = this->_cfg.getLocation(this->_uri._path).cgi_path;
-	LOG("CGI PATH: " + this->_cfg.getLocation(this->_uri._path).cgi_path, DEBUG, 0);
-	LOG("URI PATH: " + this->_uri._path, DEBUG, 0);
 	this->_env["SCRIPT_FILENAME"] = this->_cfg.getLocation(this->_uri._path).cgi_path;
     this->_env["QUERY_STRING"] = this->_uri._qString;
     this->_env["REMOTE_ADDR"] = this->_cfg.host;
