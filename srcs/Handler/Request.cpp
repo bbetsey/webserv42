@@ -156,7 +156,7 @@ std::string Request::handlePost(void)
 
 std::string Request::handleHead(void)
 {
-    if (!vectorContains("GET", this->_cfg.getLocation(this->_uri._path).methods) && !vectorContains("HEAD", this->_cfg.getLocation(this->_uri._path).methods))
+    if (!vectorContains("HEAD", this->_cfg.getLocation(this->_uri._path).methods))
     {
         this->_resStatus = 405;
         this->_resType = NOTHING;

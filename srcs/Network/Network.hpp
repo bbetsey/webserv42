@@ -42,7 +42,7 @@ class Network {
 		// MARK: - Private Methods
 
 		void	watch_loop( int kq, struct kevent *kset, int len );
-		void	recv_msg( struct kevent &event, t_udata *data );
+		void	recv_msg( struct kevent &event, t_udata *data, int size );
 		void	send_msg( struct kevent &event, t_udata *data );
 
 		void	accept_new_client( int kq, struct kevent &event );

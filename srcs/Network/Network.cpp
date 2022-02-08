@@ -90,15 +90,16 @@ void	Network::read_socket( int kq, struct kevent &event ) {
 		else data->flag = 1;
 
 	} else {
-		recv_msg( event, data );
+		recv_msg( event, data, event.data );
 	}
 
 }
 
-void	Network::recv_msg( struct kevent &event, t_udata *data ) {
-	char	buf[ BUFFER_READ ];
+void	Network::recv_msg( struct kevent &event, t_udata *data, int size ) {
+	char	*buf;
 	size_t	read_bytes;
 
+	buf = ( char * )malloc( sizeof( char ) * (size + 1) );
 	read_bytes = recv( event.ident, buf, sizeof( buf ), 0 );
 
 	if ( read_bytes > 0 ) {
@@ -109,6 +110,7 @@ void	Network::recv_msg( struct kevent &event, t_udata *data ) {
 		LOG( "Read: " + itos( read_bytes ) + "b\n", INFO, data->addr->sin_port );
 		LOG( "Request:\n" + std::string( buf ), DEBUG, data->addr->sin_port );
 	}
+	free( buf );
 
 }
 
