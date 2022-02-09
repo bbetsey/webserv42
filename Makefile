@@ -1,4 +1,4 @@
-NAME	=	test/webserv
+NAME	=	webserv
 
 SRCS	=	srcs/main.cpp \
 			srcs/Handler/Request.cpp \

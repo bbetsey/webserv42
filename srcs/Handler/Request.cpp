@@ -6,13 +6,7 @@ Request::Request(const ServerConfig cfg) : _cfg(cfg), _isReady(0), _headerWasRea
         this->_cfg.locationdirs.push_back(this->_cfg.locations[i].path);
 }
 
-Request::~Request(void)
-{
-    // if (chdir(this->_pathToReturn) != 0)
-    // {
-    //     LOG("Can't change dir back to [" + std::string(this->_pathToReturn) + "]", ERROR, 0);
-    // }
-}
+Request::~Request(void) {}
 
 void Request::checkIfChunked(void)
 {
@@ -99,7 +93,7 @@ void Request::parseFirstLine()
     }
     catch (std::exception &e)
     {
-        LOG("Wrong first line!", ERROR, 0);
+        LOG("Wrong first line!", ERROR, atoi(this->_cfg.port.c_str()));
         this->_parseStatus = 0;
     }
 }
@@ -139,34 +133,12 @@ void Request::parseBody(void)
     }
 }
 
-// static std::string getFilePath(std::string fullPath) // /directory/anotherDirectory/file -> ./anotherDirectory/file
-// {
-//     std::string ret;
-//     if (fullPath[fullPath.length() - 1 ] == '/')
-//         fullPath.pop_back();
-//     if (fullPath[0] == '/' && fullPath.length() > 1)
-//         fullPath = fullPath.substr(1, fullPath.length());
-
-//     size_t tmp = fullPath.find_first_of('/');
-//     if (tmp != std::string::npos)
-//         return (fullPath.substr(tmp + 1, fullPath.length()));
-//     return (fullPath);
-// }
-
 void Request::parse(void)
 {
     this->_parseStatus = 1;
     this->parseFirstLine();
     this->parseHeaders();
     this->parseBody();
-
-    // getcwd(this->_pathToReturn, 100);
-    // if (chdir(this->_loc.root.c_str() ) != 0)
-    // {
-    //     LOG("Can't change dir to [" + this->_cfg.root + "] from " + this->_pathToReturn, ERROR, 0);
-    // }
-
-    LOG("URI PATH: [" + this->_uri._path + "]", DEBUG, 0);
 }
 
 void Request::genHeader()
@@ -187,7 +159,6 @@ void Request::genHeader()
     this->_resHeader += CRLF;
 }
 
-// 0 if not contains, 1 else
 static bool vectorContains(std::string elem, std::vector<std::string> vec)
 {
     return (std::find(vec.begin(), vec.end(), elem) != vec.end());
@@ -202,7 +173,7 @@ std::string Request::handlePost(void)
         return (this->handleErr("Not allowed method"));
     }
 
-    this->_cgiResponse = Cgi(*this, (this->_loc.root + this->_loc.cgi_path)).execute();
+    this->_cgiResponse = Cgi(*this, this->_loc.cgi_path).execute();
     this->parseCgiResponse();
 
     if (this->_cgiStatus != 200)
@@ -258,7 +229,6 @@ std::string Request::handleDelete(void)
 
 bool Request::readContent(const std::string &path)
 {
-    LOG("Trying to open [" + path + "]", ERROR, 0);
     if (readFile(path, this->_resBody))
     {
         this->_resType = REGFILE;
@@ -281,7 +251,7 @@ std::string Request::handleGet(void)
         return (this->handleErr("Not allowed method"));
     }
 
-    this->_cgiResponse = Cgi(*this, (this->_loc.root + this->_loc.cgi_path)).execute();
+    this->_cgiResponse = Cgi(*this, this->_loc.cgi_path).execute();
 
     this->parseCgiResponse();
     if (this->_cgiStatus != 200)
@@ -299,7 +269,6 @@ std::string Request::handleGet(void)
     else if (tmp == 2)
     {
         std::string indexPath = this->_uri._path + (this->_loc.index.size() > 0 ? this->_loc.index[0] : "index.html");
-        LOG("INDEX PATH: [" + indexPath + "]", ERROR, 0);
         switch (pathType(indexPath))
         {
             case 1:
@@ -328,7 +297,6 @@ std::string Request::handleGet(void)
         if (this->_locWasFound)
         {
             std::string indexPath = this->_uri._path + "/" + (this->_loc.index.size() > 0 ? this->_loc.index[0] : "index.html");
-            LOG("INDEX PATH: [" + indexPath + "]", ERROR, 0);
             switch (pathType(indexPath))
             {
                 case 1:
@@ -399,8 +367,15 @@ std::string Request::handlePut(void)
 
 std::string Request::handleErr(const std::string &err)
 {
-    LOG(err, ERROR, 0);
-    this->_resBody = "<!DOCTYPE html>\n<html><title>Generated errorpage</title><body><h1>yo wtf u did? " + getStatusName(this->_resStatus) + "</h1></body></html>";
+    LOG(err, ERROR, atoi(this->_cfg.port.c_str()));
+
+    int saveStatus = this->_resStatus;
+    std::string path = this->_loc.error_pages[this->_resStatus];
+    int type = pathType(path);
+    if (!(type == 1 && this->readContent(path)))
+        this->_resBody = "<!DOCTYPE html>\n<html><title>Generated errorpage</title><body><h1>yo wtf u did? " + getStatusName(this->_resStatus) + "</h1></body></html>";
+
+    this->_resStatus = saveStatus;
     this->_resType = PLAINHTML;
     this->genHeader();
 
@@ -409,7 +384,6 @@ std::string Request::handleErr(const std::string &err)
 
 void Request::parseCgiResponse(void)
 {
-    LOG("CGI RESPONSE:\n" + this->_cgiResponse, DEBUG, 0);
     std::vector<std::string> lines;
     size_t tmpPos;
 
@@ -425,13 +399,18 @@ void Request::parseCgiResponse(void)
 
 std::string Request::getResponse(void)
 {
-    LOG("RCVD:\n" + this->_reqWhole, INFO, 0);
+    LOG("RCVD\n" + this->_reqWhole, INFO, atoi(this->_cfg.port.c_str()));
     this->parse();
 
     if (!this->_parseStatus)
     {
         this->_resStatus = 500;
         return (this->handleErr("Parser fail"));
+    }
+    if (this->_reqBody.length() - 2> static_cast<size_t>(this->_loc.max_body_size))
+    {
+        this->_resStatus = 413;
+        return (this->handleErr("Body too large"));
     }
 
     if (this->_method == "GET")
