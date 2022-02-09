@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request(const ServerConfig cfg) : _cfg(cfg), _isReady(0), _headerWasRead(0), _contentLength(0), _reqHeaderEndPos(0)
+Request::Request(const ServerConfig cfg) : _cfg(cfg), _isReady(0), _headerWasRead(0), _contentLength(0), _reqHeaderEndPos(0), _locWasFound(0)
 {
     for (size_t i = 0; i < this->_cfg.locations.size(); i++)
         this->_cfg.locationdirs.push_back(this->_cfg.locations[i].path);
@@ -8,10 +8,10 @@ Request::Request(const ServerConfig cfg) : _cfg(cfg), _isReady(0), _headerWasRea
 
 Request::~Request(void)
 {
-    if (chdir(this->_pathToReturn) != 0)
-    {
-        LOG("Can't change dir back to [" + std::string(this->_pathToReturn) + "]", ERROR, 0);
-    }
+    // if (chdir(this->_pathToReturn) != 0)
+    // {
+    //     LOG("Can't change dir back to [" + std::string(this->_pathToReturn) + "]", ERROR, 0);
+    // }
 }
 
 void Request::add_msg(const std::string &msg)
@@ -35,6 +35,35 @@ bool Request::isReady(void) const
     return (this->_isReady);
 }
 
+void Request::formatPath(void)
+{
+    std::vector<std::string> tokens;
+    std::string formattedPath;
+
+    split(this->_uri._path, tokens, "/");
+    for (size_t i = 0; i < tokens.size(); i++)
+    {
+        if (!this->_locWasFound)
+        {
+            std::vector<std::string>::iterator it = std::find(this->_cfg.locationdirs.begin(), this->_cfg.locationdirs.end(), "/" + tokens[i]);
+            
+            if (it != this->_cfg.locationdirs.end())
+            {
+                this->_locWasFound = 1;
+                this->_loc = this->_cfg.getLocation(*it);
+                tokens[i] = this->_loc.root;
+                tokens[i].pop_back();
+            }
+        }
+        formattedPath += tokens[i] + "/";
+    }
+    if (pathType(formattedPath) != 2)
+        formattedPath.pop_back();
+
+
+    this->_uri._path = formattedPath;
+}
+
 void Request::parseFirstLine()
 {
     std::string firstLine = this->_reqWhole.substr(0, this->_reqWhole.find_first_of('\r') - 1);
@@ -45,6 +74,13 @@ void Request::parseFirstLine()
     {
         this->_method = tokens.at(0);
         this->_uri = Uri(tokens.at(1));
+        if (this->_uri._path != "/")
+            formatPath();
+        if (!this->_locWasFound)
+            this->_loc = this->_cfg.locations[0];     
+        if (this->_uri._path == "/")
+            this->_uri._path = this->_loc.root;
+
         this->_httpVersion = tokens.at(2);
     }
     catch (std::exception &e)
@@ -77,19 +113,19 @@ void Request::parseBody(void)
     this->_reqBody = this->_reqWhole.substr(this->_reqHeaderEndPos + 2, this->_reqWhole.length());
 }
 
-static std::string getFilePath(std::string fullPath) // /directory/anotherDirectory/file -> ./anotherDirectory/file
-{
-    std::string ret;
-    if (fullPath[fullPath.length() - 1 ] == '/')
-        fullPath.pop_back();
-    if (fullPath[0] == '/' && fullPath.length() > 1)
-        fullPath = fullPath.substr(1, fullPath.length());
+// static std::string getFilePath(std::string fullPath) // /directory/anotherDirectory/file -> ./anotherDirectory/file
+// {
+//     std::string ret;
+//     if (fullPath[fullPath.length() - 1 ] == '/')
+//         fullPath.pop_back();
+//     if (fullPath[0] == '/' && fullPath.length() > 1)
+//         fullPath = fullPath.substr(1, fullPath.length());
 
-    size_t tmp = fullPath.find_first_of('/');
-    if (tmp != std::string::npos)
-        return (fullPath.substr(tmp + 1, fullPath.length()));
-    return (fullPath);
-}
+//     size_t tmp = fullPath.find_first_of('/');
+//     if (tmp != std::string::npos)
+//         return (fullPath.substr(tmp + 1, fullPath.length()));
+//     return (fullPath);
+// }
 
 void Request::parse(void)
 {
@@ -98,15 +134,13 @@ void Request::parse(void)
     this->parseHeaders();
     this->parseBody();
 
-    getcwd(this->_pathToReturn, 100);
-    if (chdir(this->_cfg.getLocation(this->_uri._path).root.c_str() ) != 0)
-    {
-        LOG("Can't change dir to [" + this->_cfg.root + "] from " + this->_pathToReturn, ERROR, 0);
-    }
-   
-    this->_filePath = getFilePath(this->_uri._path);
-    LOG("URI PATH: [" + this->_uri._path + "]", ERROR, 0);
-    LOG("FILE PATH: [" + this->_filePath + "]", ERROR, 0);
+    // getcwd(this->_pathToReturn, 100);
+    // if (chdir(this->_loc.root.c_str() ) != 0)
+    // {
+    //     LOG("Can't change dir to [" + this->_cfg.root + "] from " + this->_pathToReturn, ERROR, 0);
+    // }
+
+    LOG("URI PATH: [" + this->_uri._path + "]", DEBUG, 0);
 }
 
 void Request::genHeader()
@@ -135,14 +169,14 @@ static bool vectorContains(std::string elem, std::vector<std::string> vec)
 
 std::string Request::handlePost(void)
 {
-    if (!vectorContains("POST", this->_cfg.getLocation(this->_uri._path).methods))
+    if (!vectorContains("POST", this->_loc.methods))
     {
         this->_resStatus = 405;
         this->_resType = NOTHING;
         return (this->handleErr("Not allowed method"));
     }
 
-    this->_cgiResponse = Cgi(*this).execute();
+    this->_cgiResponse = Cgi(*this, (this->_loc.root + this->_loc.cgi_path)).execute();
     this->parseCgiResponse();
 
     if (this->_cgiStatus != 200)
@@ -158,7 +192,7 @@ std::string Request::handlePost(void)
 
 std::string Request::handleHead(void)
 {
-    if (!vectorContains("HEAD", this->_cfg.getLocation(this->_uri._path).methods))
+    if (!vectorContains("HEAD", this->_loc.methods))
     {
         this->_resStatus = 405;
         this->_resType = NOTHING;
@@ -174,15 +208,15 @@ std::string Request::handleHead(void)
 
 std::string Request::handleDelete(void)
 {
-    if (!vectorContains("DELETE", this->_cfg.getLocation(this->_uri._path).methods))
+    if (!vectorContains("DELETE", this->_loc.methods))
     {
         this->_resStatus = 405;
         return (this->handleErr("Not allowed method"));
     }
 
-    if (pathType(this->_filePath))
+    if (pathType(this->_uri._path))
 	{
-		if (remove(this->_filePath.c_str()) == 0)
+		if (remove(this->_uri._path.c_str()) == 0)
 			this->_resStatus = 204;
 		else
 			this->_resStatus = 403;
@@ -215,13 +249,13 @@ bool Request::readContent(const std::string &path)
 
 std::string Request::handleGet(void)
 {
-    if (!vectorContains("GET", this->_cfg.getLocation(this->_uri._path).methods))
+    if (!vectorContains("GET", this->_loc.methods))
     {
         this->_resStatus = 405;
         return (this->handleErr("Not allowed method"));
     }
 
-    this->_cgiResponse = Cgi(*this).execute();
+    this->_cgiResponse = Cgi(*this, (this->_loc.root + this->_loc.cgi_path)).execute();
 
     this->parseCgiResponse();
     if (this->_cgiStatus != 200)
@@ -230,15 +264,15 @@ std::string Request::handleGet(void)
         return (this->handleErr("CGI ERR"));
     }
 
-    int tmp = pathType(this->_filePath);
+    int tmp = pathType(this->_uri._path);
     if (tmp == 1)
     {
-        if (!this->readContent(this->_filePath))
+        if (!this->readContent(this->_uri._path))
             return (this->handleErr("Can't open file"));
     }
-    else if ((tmp == 2 || this->_filePath == "/"))
+    else if (tmp == 2)
     {
-        std::string indexPath = "." + (this->_filePath[0] == '/' ? std::string("") : std::string("/")) + this->_filePath + (this->_filePath[this->_filePath.length() - 1] == '/' ? "" : "/") + this->_cfg.getLocation(this->_uri._path).index[0];
+        std::string indexPath = this->_uri._path + (this->_loc.index.size() > 0 ? this->_loc.index[0] : "index.html");
         LOG("INDEX PATH: [" + indexPath + "]", ERROR, 0);
         switch (pathType(indexPath))
         {
@@ -249,7 +283,7 @@ std::string Request::handleGet(void)
                 }
                 break;
             default:
-                if (this->_cfg.getLocation(this->_uri._path).autoindex == 1)
+                if (this->_loc.autoindex == 1)
                 {
                     this->_resStatus = 200;
                     this->_resType = PLAINHTML;
@@ -265,19 +299,20 @@ std::string Request::handleGet(void)
     }
     else
     {
-        if (vectorContains(this->_uri._path, this->_cfg.locationdirs))
+        if (this->_locWasFound)
         {
-            std::string indexPath = this->_cfg.getLocation(this->_uri._path).index[0];
+            std::string indexPath = this->_uri._path + "/" + (this->_loc.index.size() > 0 ? this->_loc.index[0] : "index.html");
+            LOG("INDEX PATH: [" + indexPath + "]", ERROR, 0);
             switch (pathType(indexPath))
             {
                 case 1:
-                    if (!this->readContent("./" + indexPath))
+                    if (!this->readContent(indexPath))
                     {
                         return (this->handleErr("Found index file but can't open it"));
                     }
                     break;
                 default:
-                    if (this->_cfg.getLocation(this->_uri._path).autoindex == 1)
+                    if (this->_loc.autoindex == 1)
                     {
                         this->_resStatus = 200;
                         this->_resType = PLAINHTML;
@@ -327,7 +362,7 @@ static int writeContent(const std::string &content, const std::string &path)
 
 std::string Request::handlePut(void)
 {
-    this->_resStatus = writeContent(this->_reqBody, this->_filePath);
+    this->_resStatus = writeContent(this->_reqBody, this->_uri._path);
 
     if (!(this->_resStatus == 201 || this->_resStatus == 204))
         return this->handleErr("Write failed");

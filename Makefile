@@ -15,8 +15,8 @@ SRCS	=	srcs/main.cpp \
 OBJS	= 	$(SRCS:cpp=o)
 
 OS 		=	$(uname)
-FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror -I/usr/include/kqueue
-# LDFLAGS =	-lkqueue
+FLAGS	=	-std=c++98 -pedantic -Wall -Wextra -Werror $(if $(filter-out Linux,$(OS)),$(),$(-I/usr/include/kqueue))
+LDFLAGS =	$(if $(filter-out Linux,$(OS)),$(),$(-lkqueue))
 
 all: $(NAME)
 

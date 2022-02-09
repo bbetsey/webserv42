@@ -16,12 +16,13 @@ class Request;
 class Cgi
 {
     public:
-        Cgi(Request &req);
+        Cgi(Request &req, const std::string &cgiPath);
 
         std::string execute(void);
     private:
         std::map<std::string, std::string> _env;
 
+        const std::string &_cgiPath;
         Request &_req;
         const std::string &_method;
         const Uri &_uri;

@@ -2,7 +2,7 @@
 
 // https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 
-Cgi::Cgi(Request &req) : _req(req), _method(req.getMethod()), _uri(req.getUri()), _body(req.getBody()), _headers(req.getHeaders()), _cfg(req.getConfig())
+Cgi::Cgi(Request &req, const std::string &cgiPath) : _cgiPath(cgiPath),  _req(req), _method(req.getMethod()), _uri(req.getUri()), _body(req.getBody()), _headers(req.getHeaders()), _cfg(req.getConfig())
 {
     this->_env["GATEWAY_INTERFACE"] = "CGI/1.1";
     this->_env["SERVER_SOFTWARE"] = this->_cfg.name;
@@ -11,8 +11,8 @@ Cgi::Cgi(Request &req) : _req(req), _method(req.getMethod()), _uri(req.getUri())
     this->_env["REQUEST_METHOD"] = this->_req.getMethod();
     this->_env["PATH_INFO"] = this->_uri._path;
     this->_env["PATH_TRANSLATED"] = this->_uri._path;
-    this->_env["SCRIPT_NAME"] = this->_cfg.getLocation(this->_uri._path).cgi_path;
-	this->_env["SCRIPT_FILENAME"] = this->_cfg.getLocation(this->_uri._path).cgi_path;
+    this->_env["SCRIPT_NAME"] = this->_cgiPath;
+	this->_env["SCRIPT_FILENAME"] = this->_cgiPath;
     this->_env["QUERY_STRING"] = this->_uri._qString;
     this->_env["REMOTE_ADDR"] = this->_cfg.host;
 	this->_env["REMOTEaddr"] = this->_cfg.host;
@@ -90,7 +90,7 @@ std::string Cgi::execute(void)
 		char * const * _null = NULL;
 		dup2(fdIn, 0);
 		dup2(fdOut, 1);
-		execve(this->_cfg.getLocation(this->_uri._path).cgi_path.c_str(), _null, env);
+		execve(this->_cgiPath.c_str(), _null, env);
 		write(1, "Status: 502\r\n\r\n", 15);
 	}
 	else

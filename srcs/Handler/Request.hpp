@@ -35,6 +35,7 @@ class Request
     private:
         // Config
         ServerConfig _cfg;
+        Location    _loc;
 
         // Request irst line arguments
         std::string _method;
@@ -67,11 +68,13 @@ class Request
 
         ResponseType _resType;
 
-        char _pathToReturn[100];
-        std::string _filePath;
+        // char _pathToReturn[100];
+
+        bool _locWasFound;
 
         // Parser
         void parse(void);
+        void formatPath(void);
         void parseFirstLine(void);
         void parseHeaders(void);
         void parseBody(void);
