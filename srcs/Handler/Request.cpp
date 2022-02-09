@@ -93,7 +93,7 @@ void Request::parseFirstLine()
     }
     catch (std::exception &e)
     {
-        LOG("Wrong first line!", ERROR, 0);
+        LOG("Wrong first line!", ERROR, atoi(this->_cfg.port.c_str()));
         this->_parseStatus = 0;
     }
 }
@@ -139,8 +139,6 @@ void Request::parse(void)
     this->parseFirstLine();
     this->parseHeaders();
     this->parseBody();
-
-    LOG("URI PATH: [" + this->_uri._path + "]", DEBUG, 0);
 }
 
 void Request::genHeader()
@@ -231,7 +229,6 @@ std::string Request::handleDelete(void)
 
 bool Request::readContent(const std::string &path)
 {
-    LOG("Trying to open [" + path + "]", DEBUG, 0);
     if (readFile(path, this->_resBody))
     {
         this->_resType = REGFILE;
@@ -272,7 +269,6 @@ std::string Request::handleGet(void)
     else if (tmp == 2)
     {
         std::string indexPath = this->_uri._path + (this->_loc.index.size() > 0 ? this->_loc.index[0] : "index.html");
-        LOG("INDEX PATH: [" + indexPath + "]", DEBUG, 0);
         switch (pathType(indexPath))
         {
             case 1:
@@ -301,7 +297,6 @@ std::string Request::handleGet(void)
         if (this->_locWasFound)
         {
             std::string indexPath = this->_uri._path + "/" + (this->_loc.index.size() > 0 ? this->_loc.index[0] : "index.html");
-            LOG("INDEX PATH: [" + indexPath + "]", ERROR, 0);
             switch (pathType(indexPath))
             {
                 case 1:
@@ -372,13 +367,15 @@ std::string Request::handlePut(void)
 
 std::string Request::handleErr(const std::string &err)
 {
-    LOG(err, ERROR, 0);
+    LOG(err, ERROR, atoi(this->_cfg.port.c_str()));
 
+    int saveStatus = this->_resStatus;
     std::string path = this->_loc.error_pages[this->_resStatus];
     int type = pathType(path);
     if (!(type == 1 && this->readContent(path)))
         this->_resBody = "<!DOCTYPE html>\n<html><title>Generated errorpage</title><body><h1>yo wtf u did? " + getStatusName(this->_resStatus) + "</h1></body></html>";
 
+    this->_resStatus = saveStatus;
     this->_resType = PLAINHTML;
     this->genHeader();
 
@@ -387,7 +384,6 @@ std::string Request::handleErr(const std::string &err)
 
 void Request::parseCgiResponse(void)
 {
-    LOG("CGI RESPONSE:\n" + this->_cgiResponse, DEBUG, 0);
     std::vector<std::string> lines;
     size_t tmpPos;
 
@@ -403,7 +399,7 @@ void Request::parseCgiResponse(void)
 
 std::string Request::getResponse(void)
 {
-    LOG("RCVD:\n" + this->_reqWhole, INFO, 0);
+    LOG("RCVD\n" + this->_reqWhole, INFO, atoi(this->_cfg.port.c_str()));
     this->parse();
 
     if (!this->_parseStatus)
@@ -411,7 +407,6 @@ std::string Request::getResponse(void)
         this->_resStatus = 500;
         return (this->handleErr("Parser fail"));
     }
-    std::cout << YELLOW << this->_reqBody.length() - 2 << RESET << std::endl;
     if (this->_reqBody.length() - 2> static_cast<size_t>(this->_loc.max_body_size))
     {
         this->_resStatus = 413;
