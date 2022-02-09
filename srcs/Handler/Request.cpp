@@ -18,21 +18,23 @@ void Request::checkIfChunked(void)
 {
     if (this->_reqWhole.find("Transfer-Encoding: chunked") != std::string::npos)
         this->_isChunked = 1;
+    else
+        this->_isChunked = 0;
 }
 
 void Request::add_msg(const std::string &msg)
 {
     this->_reqWhole += msg;
-    this->checkIfChunked();
 
     if (!this->_headerWasRead && (this->_reqHeaderEndPos = hasDoubleCRLF(this->_reqWhole)))
     {
         this->_headerWasRead = 1;
+        this->checkIfChunked();
         this->_contentLength = getContentLength(this->_reqWhole);
     }
     if (this->_headerWasRead && !this->_isChunked && this->_reqWhole.length() - this->_reqHeaderEndPos + 2 >= this->_contentLength)
     {
-            this->_isReady = 1;
+        this->_isReady = 1;
     }
     if (this->_headerWasRead && this->_isChunked)
     {
