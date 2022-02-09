@@ -177,7 +177,16 @@ std::string Request::handlePost(void)
     }
 
     this->_cgiResponse = Cgi(*this, this->_loc.cgi_path).execute();
+    std::cout << YELLOW << this->_cgiResponse << std::endl;
     this->parseCgiResponse();
+
+    if (this->_cgiStatus == 302)
+    {
+        this->_resStatus = 302;
+        this->_resType = NOTHING;
+        this->genHeader();
+        return (this->_resHeader);
+    }
 
     if (this->_cgiStatus != 200)
     {
@@ -255,8 +264,16 @@ std::string Request::handleGet(void)
     }
 
     this->_cgiResponse = Cgi(*this, this->_loc.cgi_path).execute();
-
+    std::cout << YELLOW << this->_cgiResponse << std::endl;
     this->parseCgiResponse();
+    if (this->_cgiStatus == 302)
+    {
+        this->_resType = NOTHING;
+        this->_resStatus = 302;
+        this->genHeader();
+        return (this->_resHeader);
+    }
+
     if (this->_cgiStatus != 200)
     {
         this->_resStatus = this->_cgiStatus;

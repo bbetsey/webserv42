@@ -2,32 +2,15 @@
 
 // https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 
-/*
-
-strIsGood:
-Status: 302
-Location: http://localhost:3333/secret.html
-Set-Cookies: secret
-
-Cookie == 'secret':
-Status: 302
-Location: http://localhost:3333/secret.html
-
-Cookie != 'secret':
-Status: 302
-Location: http://localhost:3333/login.html
-
-
-*/
 Cgi::Cgi(Request &req, const std::string &cgiPath) : _cgiPath(cgiPath),  _req(req), _method(req.getMethod()), _uri(req.getUri()), _body(req.getBody()), _headers(req.getHeaders()), _cfg(req.getConfig())
 {
-	
     this->_env["GATEWAY_INTERFACE"] = "CGI/1.1";
     this->_env["SERVER_SOFTWARE"] = this->_cfg.name;
     this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
     this->_env["SERVER_PORT"] = this->_cfg.port;
     this->_env["REQUEST_METHOD"] = this->_req.getMethod();
     this->_env["PATH_INFO"] = this->_uri._path;
+	std::cout << RED << this->_uri._path << RESET << std::endl;
     this->_env["PATH_TRANSLATED"] = this->_uri._path;
     this->_env["SCRIPT_NAME"] = this->_cgiPath;
 	this->_env["SCRIPT_FILENAME"] = this->_cgiPath;
@@ -43,7 +26,12 @@ Cgi::Cgi(Request &req, const std::string &cgiPath) : _cgiPath(cgiPath),  _req(re
         this->_env["SERVER_NAME"] = this->_env["REMOTE_ADDR"];
 
 	if (this->_headers.find("Cookie") != this->_headers.end())
-		this->_env["COOKIE"] = this->_headers["COOKIE"];
+		this->_env["COOKIE"] = this->_headers["Cookie"];
+	else
+		this->_env["COOKIE"] = "";
+
+	if (this->_cgiPath == "eval/cookieroot/cgi_cookie.py")
+		this->_env["DATA"] = this->_body;
 
     if (this->_headers.find("Auth-Scheme") != this->_headers.end())
     {
@@ -111,6 +99,7 @@ std::string Cgi::execute(void)
 		char * const * _null = NULL;
 		dup2(fdIn, 0);
 		dup2(fdOut, 1);
+
 		execve(this->_cgiPath.c_str(), _null, env);
 		write(1, "Status: 502\r\n\r\n", 15);
 	}

@@ -145,6 +145,8 @@ void	Network::send_msg( struct kevent &event, t_udata *data ) {
 
 	std::string response = data->req->getResponse();	// Получаю ответ для отправки
 
+	LOG("SEND\n" + response, INFO, 0);
+
 	if ( send( event.ident, response.c_str(), response.length(), 0 ) == -1 ) {
 		LOG( "send error", ERROR, data->addr->sin_port );
 		return;
