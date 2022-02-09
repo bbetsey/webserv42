@@ -3,7 +3,7 @@
 
 // MARK: - Class Constructor
 
-Parser::Parser( const std::string &path ) : path( path ) {}
+Parser::Parser( const std::string &path ) : path( path ) { this->parse(); }
 
 
 // MARK: - Class Distructor
@@ -163,11 +163,12 @@ void	Parser::getSingleField( std::string &data, const std::vector< std::string >
 	}
 }
 
-static bool isParam (std::string line)
+static bool strIsDigit(std::string line)
 {
-    if (line.length() > 0 && isdigit(atoi(line.c_str())))
-        return true;
-    return false;
+	for (size_t i = 0; i < line.length(); i++)
+		if (!isdigit(line[i]))
+			return (0);
+	return (1);
 }
 
 void	Parser::getErrorPage( std::map< int, std::string > &error_pages, const std::vector< std::string > &file, size_t &i ) {
@@ -178,12 +179,10 @@ void	Parser::getErrorPage( std::map< int, std::string > &error_pages, const std:
 		++j;
 	std::string path = file[--j];
 
-	while ( 1 )
+	while (strIsDigit(file[i]))
 	{
-		if (isParam(file[i]))
-			error_pages[std::atoi(file[i++].c_str())] = path;
-		else
-			break;
+		error_pages[std::atoi(file[i].c_str())] = path;
+		i++;
 	}
 }
 

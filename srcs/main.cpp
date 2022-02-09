@@ -10,11 +10,7 @@ int main(int argc, char **argv)
         LOG("Wrong arguments!", ERROR, 0);
         exit(1);
     }
-    Parser  parser(argv[1]);
-    parser.parse();
-
-    Config cfg = parser.getConfig();
+    Config cfg = Parser(argv[1]).getConfig();
     std::cout << cfg;
-    Network network( cfg );
-    network.start();
+    Network(cfg).start();
 }

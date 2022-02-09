@@ -71,8 +71,6 @@ class Request
 
         ResponseType _resType;
 
-        // char _pathToReturn[100];
-
         bool _locWasFound;
 
         // Parser
