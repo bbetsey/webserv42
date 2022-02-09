@@ -12,7 +12,7 @@
 class AutoIndexGen
 {
     public:
-        AutoIndexGen(const std::string &path);
+        AutoIndexGen(const std::string &path, const std::string &ori_path);
 
         std::string getOutput(void) const;
     private:

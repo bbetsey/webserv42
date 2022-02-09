@@ -14,18 +14,29 @@ Request::~Request(void)
     // }
 }
 
+void Request::checkIfChunked(void)
+{
+    if (this->_reqWhole.find("Transfer-Encoding: chunked") != std::string::npos)
+        this->_isChunked = 1;
+}
+
 void Request::add_msg(const std::string &msg)
 {
     this->_reqWhole += msg;
+    this->checkIfChunked();
 
     if (!this->_headerWasRead && (this->_reqHeaderEndPos = hasDoubleCRLF(this->_reqWhole)))
     {
         this->_headerWasRead = 1;
         this->_contentLength = getContentLength(this->_reqWhole);
     }
-    if (this->_headerWasRead)
+    if (this->_headerWasRead && !this->_isChunked && this->_reqWhole.length() - this->_reqHeaderEndPos + 2 >= this->_contentLength)
     {
-        if (this->_reqWhole.length() - this->_reqHeaderEndPos + 2 >= this->_contentLength)
+            this->_isReady = 1;
+    }
+    if (this->_headerWasRead && this->_isChunked)
+    {
+        if (this->_reqWhole.find("0\r\n\r\n") != std::string::npos)
             this->_isReady = 1;
     }
 }
@@ -39,6 +50,7 @@ void Request::formatPath(void)
 {
     std::vector<std::string> tokens;
     std::string formattedPath;
+    this->_ori_path = this->_uri._path;
 
     split(this->_uri._path, tokens, "/");
     for (size_t i = 0; i < tokens.size(); i++)
@@ -60,7 +72,6 @@ void Request::formatPath(void)
     if (pathType(formattedPath) != 2)
         formattedPath.pop_back();
 
-
     this->_uri._path = formattedPath;
 }
 
@@ -77,9 +88,10 @@ void Request::parseFirstLine()
         if (this->_uri._path != "/")
             formatPath();
         if (!this->_locWasFound)
-            this->_loc = this->_cfg.locations[0];     
-        if (this->_uri._path == "/")
-            this->_uri._path = this->_loc.root;
+        {
+            this->_loc = this->_cfg.getLocation("/");
+            this->_uri._path = this->_loc.root + this->_uri._path;
+        }
 
         this->_httpVersion = tokens.at(2);
     }
@@ -111,6 +123,18 @@ void Request::parseHeaders()
 void Request::parseBody(void)
 {
     this->_reqBody = this->_reqWhole.substr(this->_reqHeaderEndPos + 2, this->_reqWhole.length());
+
+    if (this->_isChunked)
+    {
+        std::vector<std::string> lines;
+        std::string newBody;
+        split(this->_reqBody, lines, "\r\n");
+        for (size_t i = 0; i < lines.size(); i++)
+            if (i % 2 != 0)
+                newBody += lines[i];
+        
+        this->_reqBody = newBody;
+    }
 }
 
 // static std::string getFilePath(std::string fullPath) // /directory/anotherDirectory/file -> ./anotherDirectory/file
@@ -287,7 +311,7 @@ std::string Request::handleGet(void)
                 {
                     this->_resStatus = 200;
                     this->_resType = PLAINHTML;
-                    this->_resBody = AutoIndexGen("." + this->_uri._path).getOutput();
+                    this->_resBody = AutoIndexGen(this->_uri._path, this->_ori_path).getOutput();
                 }
                 else
                 {
@@ -316,7 +340,7 @@ std::string Request::handleGet(void)
                     {
                         this->_resStatus = 200;
                         this->_resType = PLAINHTML;
-                        this->_resBody = AutoIndexGen("." + this->_uri._path).getOutput();
+                        this->_resBody = AutoIndexGen(this->_uri._path, this->_ori_path).getOutput();
                     }
                     else
                     {

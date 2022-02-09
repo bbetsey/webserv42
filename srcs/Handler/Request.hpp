@@ -25,6 +25,7 @@ class Request
         std::string getResponse(void);
         void add_msg(const std::string &msg);
         bool isReady(void) const;
+        void checkIfChunked(void);
 
         const std::string &getMethod(void) const;
         const Uri &getUri(void) const;
@@ -41,6 +42,7 @@ class Request
         std::string _method;
         Uri _uri;
         std::string _httpVersion;
+        std::string _ori_path;
 
         // Request parts
         std::string _reqWhole;
@@ -55,6 +57,7 @@ class Request
         int _resStatus;
 
         // Util vars
+        bool _isChunked;
         bool _isReady;
         bool _parseStatus;
 
