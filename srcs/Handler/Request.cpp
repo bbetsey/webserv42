@@ -39,7 +39,7 @@ void Request::parseFirstLine()
 {
     std::string firstLine = this->_reqWhole.substr(0, this->_reqWhole.find_first_of('\r') - 1);
     std::vector<std::string> tokens;
-    split(firstLine, tokens, " ");
+    split(firstLine, tokens, " \r\n");
 
     try
     {
@@ -80,7 +80,8 @@ void Request::parseBody(void)
 static std::string getFilePath(std::string fullPath) // /directory/anotherDirectory/file -> ./anotherDirectory/file
 {
     std::string ret;
-
+    if (fullPath[fullPath.length() - 1 ] == '/')
+        fullPath.pop_back();
     if (fullPath[0] == '/' && fullPath.length() > 1)
         fullPath = fullPath.substr(1, fullPath.length());
 
@@ -137,6 +138,7 @@ std::string Request::handlePost(void)
     if (!vectorContains("POST", this->_cfg.getLocation(this->_uri._path).methods))
     {
         this->_resStatus = 405;
+        this->_resType = NOTHING;
         return (this->handleErr("Not allowed method"));
     }
 
@@ -160,10 +162,13 @@ std::string Request::handleHead(void)
     {
         this->_resStatus = 405;
         this->_resType = NOTHING;
+        return (this->handleErr("Not allowed method"));
     }
 
     std::string tmp = this->handleGet();
-    
+    this->_resStatus = 204;
+    this->_resHeader = "";
+    this->genHeader();
     return (this->_resHeader);
 }
 
@@ -380,7 +385,7 @@ std::string Request::getResponse(void)
         return (this->handlePut());
 
     this->_resStatus = 501;
-    return (this->handleErr("No such method"));
+    return (this->handleErr(this->_method));
 }
 
 const std::string &Request::getMethod(void) const { return this->_method; }

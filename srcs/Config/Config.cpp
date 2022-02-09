@@ -170,6 +170,7 @@ std::ostream	&operator << ( std::ostream &out, const Location &loc ) {
 		out << std::endl;
 	}
 	if ( loc.autoindex > 0 ) out << "autoindex: on" << std::endl;
+	if ( loc.authorization > 0 ) out << "authorization: on" << std::endl;
 	if ( loc.max_body_size > 0 ) out << "max_body_size: " << loc.max_body_size << std::endl;
 	if ( loc.error_pages.size() > 0 ) {
 		std::map< int, std::string >::const_iterator	it = loc.error_pages.begin();

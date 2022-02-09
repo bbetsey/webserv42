@@ -19,6 +19,7 @@ struct Location {
 	std::vector< std::string >		methods;
 	std::map< int, std::string >	error_pages;
 	std::vector< Location >			locations;
+	int								authorization;
 	int								autoindex;
 	int								max_body_size;
 

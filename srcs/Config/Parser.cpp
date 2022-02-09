@@ -122,6 +122,7 @@ void	Parser::getLocation( std::vector< Location > &locations, const std::vector<
 
 	loc.autoindex = -1;
 	loc.max_body_size = -1;
+	loc.authorization = 0;
 
 	for ( ++i; file[i] != "{"; ++i )
 		loc.path += file[i];
@@ -145,6 +146,8 @@ void	Parser::getLocation( std::vector< Location > &locations, const std::vector<
 			getMultipleField( loc.methods, file, i );
 		else if ( file[i] == "location" )
 			getLocation( loc.locations, file, i );
+		else if ( file[i] == "authorization" )
+			getAutoIndex( loc.authorization, file, i );
 	}
 	locations.push_back( loc );
 }
