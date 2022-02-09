@@ -109,6 +109,10 @@ void	Network::recv_msg( struct kevent &event, t_udata *data, int size ) {
 
 		LOG( "Read: " + itos( read_bytes ) + "b\n", INFO, data->addr->sin_port );
 		LOG( "Request:\n" + std::string( buf ), DEBUG, data->addr->sin_port );
+	} else if ( read_bytes == 0 ) {
+		data->flag = 1;
+	} else if ( read_bytes < 0 ) {
+		LOG( "recv error", ERROR, data->addr->sin_port );
 	}
 	free( buf );
 
@@ -145,7 +149,10 @@ void	Network::send_msg( struct kevent &event, t_udata *data ) {
 
 	std::string response = data->req->getResponse();	// Получаю ответ для отправки
 
-	send( event.ident, response.c_str(), response.length(), 0 );
+	if ( send( event.ident, response.c_str(), response.length(), 0 ) == -1 ) {
+		LOG( "send error", ERROR, data->addr->sin_port );
+		return;
+	}
 	LOG( "Write: " + itos( response.length() ) + "b\n", INFO, data->addr->sin_port );
 	LOG( "Response:\n" + response, DEBUG, data->addr->sin_port );
 	delete data->req;

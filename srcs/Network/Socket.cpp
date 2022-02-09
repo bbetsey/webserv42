@@ -44,6 +44,7 @@ int	Socket::start( void ) {
 
 	if ( bind( _sockfd, _res->ai_addr, _res->ai_addrlen ) == - 1 ) {
 		std::cout << "socket bind error: " << std::string( strerror( errno ) ) << std::endl;
+		close( _sockfd );
 		return 0;
 	}
 
