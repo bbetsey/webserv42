@@ -173,7 +173,7 @@ std::string Request::handlePost(void)
         return (this->handleErr("Not allowed method"));
     }
 
-    this->_cgiResponse = Cgi(*this, (this->_loc.root + this->_loc.cgi_path)).execute();
+    this->_cgiResponse = Cgi(*this, this->_loc.cgi_path).execute();
     this->parseCgiResponse();
 
     if (this->_cgiStatus != 200)
@@ -251,7 +251,7 @@ std::string Request::handleGet(void)
         return (this->handleErr("Not allowed method"));
     }
 
-    this->_cgiResponse = Cgi(*this, (this->_loc.root + this->_loc.cgi_path)).execute();
+    this->_cgiResponse = Cgi(*this, this->_loc.cgi_path).execute();
 
     this->parseCgiResponse();
     if (this->_cgiStatus != 200)
