@@ -90,6 +90,8 @@ class Request
         std::string handlePut(void);
         std::string handleErr(const std::string &err);
 
+        std::map<std::string, std::string> _resHeaders;
+
         bool readContent(const std::string &path);
 
 };

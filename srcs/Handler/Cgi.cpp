@@ -2,8 +2,26 @@
 
 // https://datatracker.ietf.org/doc/html/rfc3875#section-4.1
 
+/*
+
+strIsGood:
+Status: 302
+Location: http://localhost:3333/secret.html
+Set-Cookies: secret
+
+Cookie == 'secret':
+Status: 302
+Location: http://localhost:3333/secret.html
+
+Cookie != 'secret':
+Status: 302
+Location: http://localhost:3333/login.html
+
+
+*/
 Cgi::Cgi(Request &req, const std::string &cgiPath) : _cgiPath(cgiPath),  _req(req), _method(req.getMethod()), _uri(req.getUri()), _body(req.getBody()), _headers(req.getHeaders()), _cfg(req.getConfig())
 {
+	
     this->_env["GATEWAY_INTERFACE"] = "CGI/1.1";
     this->_env["SERVER_SOFTWARE"] = this->_cfg.name;
     this->_env["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -23,6 +41,9 @@ Cgi::Cgi(Request &req, const std::string &cgiPath) : _cgiPath(cgiPath),  _req(re
         this->_env["SERVER_NAME"] = this->_headers["Hostname"];
     else
         this->_env["SERVER_NAME"] = this->_env["REMOTE_ADDR"];
+
+	if (this->_headers.find("Cookie") != this->_headers.end())
+		this->_env["COOKIE"] = this->_headers["COOKIE"];
 
     if (this->_headers.find("Auth-Scheme") != this->_headers.end())
     {

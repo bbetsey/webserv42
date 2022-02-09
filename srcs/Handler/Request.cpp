@@ -156,6 +156,9 @@ void Request::genHeader()
         this->_resHeader += "Last-Modified: " + getLastModified(this->_uri._path) + CRLF;
     }
 
+    for (std::map<std::string, std::string>::iterator it = this->_resHeaders.begin(); it != this->_resHeaders.end(); it++)
+        this->_resHeader += it->first + ": " + it->second + CRLF;
+
     this->_resHeader += CRLF;
 }
 
@@ -392,8 +395,10 @@ void Request::parseCgiResponse(void)
     {
         if ((tmpPos = lines[i].find("Status: ")) != std::string::npos)
             this->_cgiStatus = atoi(lines[i].substr(tmpPos + 7, lines[i].length()).c_str());
-        if ((tmpPos = lines[i].find("Content-type: ")) != std::string::npos)
-            this->_cgiType = lines[i].substr(tmpPos + 13, lines[i].length());
+        else if ((tmpPos = lines[i].find("Content-type: ")) != std::string::npos)
+            this->_cgiType = lines[i].substr(tmpPos + 14, lines[i].length());   
+        else if ((tmpPos = lines[i].find(":")) != std::string::npos)
+            this->_resHeaders[lines[i].substr(0, tmpPos)] = lines[i].substr(tmpPos + 2, lines[i].length());
     }
 }
 
