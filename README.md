@@ -6,6 +6,8 @@
 > NGINX style configuration.
 
 ```
+make
+
 ./webserv [configuration file]
 ./webserv eval/main.conf
 ```
