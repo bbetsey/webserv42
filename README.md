@@ -1,6 +1,9 @@
 ## About
 
-> HTTP Web Server. I/O Multiplexing - kqueue. GET|POST|PUT|DELETE methods. NGINX style configuration.
+> HTTP Web Server.
+> I/O Multiplexing - kqueue.
+> GET/POST/PUT/DELETE methods.
+> NGINX style configuration.
 
 ```
 ./webserv [configuration file]
